@@ -1,0 +1,273 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index cae0cf6..2fd71ae 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -321,8 +321,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/include)
+ MYSQL_CHECK_ZLIB_WITH_COMPRESS()
+ # Add bundled yassl/taocrypt or system openssl.
+ MYSQL_CHECK_SSL()
+-# Add readline or libedit.
+-MYSQL_CHECK_READLINE()
++# Add system/bundled editline.
++MYSQL_CHECK_EDITLINE()
+ # Add libevent
+ MYSQL_CHECK_LIBEVENT()
+ 
+diff --git a/client/CMakeLists.txt b/client/CMakeLists.txt
+index 1a142fe..abf09a9 100644
+--- a/client/CMakeLists.txt
++++ b/client/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-# Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
++# Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
+ # 
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+@@ -22,7 +22,7 @@ INCLUDE_DIRECTORIES(
+   ${CMAKE_SOURCE_DIR}/regex
+   ${CMAKE_SOURCE_DIR}/sql
+   ${CMAKE_SOURCE_DIR}/strings
+-  ${READLINE_INCLUDE_DIR}
++  ${EDITLINE_INCLUDE_DIR}
+   ${CMAKE_CURRENT_BINARY_DIR}
+ )
+ 
+@@ -30,13 +30,11 @@ INCLUDE_DIRECTORIES(
+ ## We will need libeay32.dll and ssleay32.dll when running client executables.
+ COPY_OPENSSL_DLLS(copy_openssl_client)
+ 
+-
+-ADD_DEFINITIONS(${READLINE_DEFINES})
+ ADD_DEFINITIONS(${SSL_DEFINES})
+ MYSQL_ADD_EXECUTABLE(mysql completion_hash.cc mysql.cc readline.cc sql_string.cc)
+ TARGET_LINK_LIBRARIES(mysql mysqlclient)
+ IF(UNIX)
+-  TARGET_LINK_LIBRARIES(mysql ${READLINE_LIBRARY})
++  TARGET_LINK_LIBRARIES(mysql ${EDITLINE_LIBRARY})
+ ENDIF(UNIX)
+ 
+ MYSQL_ADD_EXECUTABLE(mysqltest mysqltest.cc COMPONENT Test)
+diff --git a/client/mysql.cc b/client/mysql.cc
+index f6a75f4..48fd8a9 100644
+--- a/client/mysql.cc
++++ b/client/mysql.cc
+@@ -97,7 +97,7 @@ extern "C" {
+ #if defined(__WIN__)
+ #include <conio.h>
+ #else
+-#include <readline/readline.h>
++#include <editline/readline.h>
+ #define HAVE_READLINE
+ #define USE_POPEN
+ #endif
+diff --git a/cmake/build_configurations/mysql_release.cmake b/cmake/build_configurations/mysql_release.cmake
+index 69b954b..3cbb1b5 100644
+--- a/cmake/build_configurations/mysql_release.cmake
++++ b/cmake/build_configurations/mysql_release.cmake
+@@ -1,4 +1,4 @@
+-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
++# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+ # 
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+@@ -33,7 +33,6 @@ ENDIF()
+ 
+ IF(UNIX)
+   SET(WITH_EXTRA_CHARSETS all CACHE STRING "")
+-  OPTION(WITH_LIBEDIT  "" ON)
+ 
+   OPTION(WITH_PIC "" ON) # Why?
+ 
+diff --git a/cmake/readline.cmake b/cmake/readline.cmake
+index 058428f..2a44b44 100644
+--- a/cmake/readline.cmake
++++ b/cmake/readline.cmake
+@@ -1,4 +1,4 @@
+-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
++# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+ # 
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+@@ -117,85 +117,80 @@ MACRO (FIND_CURSES)
+  ENDIF()
+ ENDMACRO()
+ 
+-MACRO (MYSQL_USE_BUNDLED_LIBEDIT)
++MACRO (MYSQL_USE_BUNDLED_EDITLINE)
+   SET(USE_LIBEDIT_INTERFACE 1)
+   SET(HAVE_HIST_ENTRY 1)
+-  SET(READLINE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/cmd-line-utils/libedit)
+-  SET(READLINE_LIBRARY edit)
++  SET(EDITLINE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/cmd-line-utils/libedit)
++  SET(EDITLINE_LIBRARY edit)
+   FIND_CURSES()
+   ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/cmd-line-utils/libedit)
+ ENDMACRO()
+ 
+-MACRO (FIND_SYSTEM_LIBEDIT name)
+-  
+-  FIND_PATH(${name}_INCLUDE_DIR readline/readline.h ) 
+-  FIND_LIBRARY(${name}_LIBRARY NAMES ${name})
+-  MARK_AS_ADVANCED(${name}_INCLUDE_DIR  ${name}_LIBRARY)
++MACRO (FIND_SYSTEM_EDITLINE)
++  FIND_PATH(EDITLINE_INCLUDE_DIR
++    NAMES editline/readline.h
++  )
++  FIND_LIBRARY(EDITLINE_LIBRARY
++    NAMES
++    edit
++  )
++  MARK_AS_ADVANCED(EDITLINE_INCLUDE_DIR EDITLINE_LIBRARY)
+ 
+-  INCLUDE(CheckCXXSourceCompiles)
+-  SET(CMAKE_REQUIRES_LIBRARIES ${${name}_LIBRARY})
++  MESSAGE(STATUS "EDITLINE_INCLUDE_DIR ${EDITLINE_INCLUDE_DIR}")
++  MESSAGE(STATUS "EDITLINE_LIBRARY ${EDITLINE_LIBRARY}")
+ 
+-  IF(${name}_LIBRARY AND ${name}_INCLUDE_DIR)
+-    SET(SYSTEM_READLINE_FOUND 1)
+-    SET(CMAKE_REQUIRED_LIBRARIES ${${name}_LIBRARY})
++  INCLUDE(CheckCXXSourceCompiles)
++  IF(EDITLINE_LIBRARY AND EDITLINE_INCLUDE_DIR)
++    SET(CMAKE_REQUIRED_LIBRARIES ${EDITLINE_LIBRARY})
+     CHECK_CXX_SOURCE_COMPILES("
+     #include <stdio.h>
+-    #include <readline/readline.h> 
++    #include <editline/readline.h>
+     int main(int argc, char **argv)
+     {
+        HIST_ENTRY entry;
+        return 0;
+     }"
+-    ${name}_HAVE_HIST_ENTRY)
+-    
++    EDITLINE_HAVE_HIST_ENTRY)
++
+     CHECK_CXX_SOURCE_COMPILES("
+     #include <stdio.h>
+-    #include <readline/readline.h>
++    #include <editline/readline.h>
+     int main(int argc, char **argv)
+     {
+-      char res= *(*rl_completion_entry_function)(0,0);
++      typedef int MYFunction(const char*, int);
++      MYFunction* myf= rl_completion_entry_function;
++      int res= (myf)(NULL, 0);
+       completion_matches(0,0);
++      return res;
+     }"
+-    ${name}_USE_LIBEDIT_INTERFACE)
++    EDITLINE_HAVE_COMPLETION)
+ 
+-    CHECK_CXX_SOURCE_COMPILES("
+-    #include <stdio.h>
+-    #include <readline/readline.h>
+-    int main(int argc, char **argv)
+-    {
+-      rl_completion_func_t *func1= (rl_completion_func_t*)0;
+-      rl_compentry_func_t *func2= (rl_compentry_func_t*)0;
+-    }"
+-    ${name}_USE_NEW_READLINE_INTERFACE)
+-  
+-    IF(${name}_USE_LIBEDIT_INTERFACE  OR ${name}_USE_NEW_READLINE_INTERFACE)
+-      SET(READLINE_LIBRARY ${${name}_LIBRARY})
+-      SET(READLINE_INCLUDE_DIR ${${name}_INCLUDE_DIR})
+-      SET(HAVE_HIST_ENTRY ${${name}_HAVE_HIST_ENTRY})
+-      SET(USE_LIBEDIT_INTERFACE ${${name}_USE_LIBEDIT_INTERFACE})
+-      SET(USE_NEW_READLINE_INTERFACE ${${name}_USE_NEW_READLINE_INTERFACE}) 
+-      SET(READLINE_FOUND 1)
++    IF(EDITLINE_HAVE_COMPLETION)
++      SET(HAVE_HIST_ENTRY ${EDITLINE_HAVE_HIST_ENTRY})
++      SET(USE_LIBEDIT_INTERFACE 1)
++      SET(EDITLINE_FOUND 1)
+     ENDIF()
+   ENDIF()
+ ENDMACRO()
+ 
+ 
+-MACRO (MYSQL_CHECK_READLINE)
++IF (NOT WITH_EDITLINE AND NOT WIN32)
++  SET(WITH_EDITLINE "bundled" CACHE STRING "By default use bundled editline")
++ENDIF()
++
++MACRO (MYSQL_CHECK_EDITLINE)
+   IF (NOT WIN32)
+     MYSQL_CHECK_MULTIBYTE()
+-    IF(NOT CYGWIN)	
+-      SET(WITH_LIBEDIT  ON CACHE BOOL  "Use bundled libedit")
+-      # Bundled libedit does not compile on cygwin, only readline
+-    ENDIF()
+ 
+-    IF(WITH_LIBEDIT) 
+-     MYSQL_USE_BUNDLED_LIBEDIT()
+-    ELSE()
+-      FIND_SYSTEM_LIBEDIT(edit)
+-      IF(NOT_LIBEDIT_FOUND)
+-        MESSAGE(FATAL_ERROR "Cannot find system libedit libraries.Use WITH_LIBEDIT") 
++    IF(WITH_EDITLINE STREQUAL "bundled") 
++      MYSQL_USE_BUNDLED_EDITLINE()
++    ELSEIF(WITH_EDITLINE STREQUAL "system")
++      FIND_SYSTEM_EDITLINE()
++      IF(NOT EDITLINE_FOUND)
++        MESSAGE(FATAL_ERROR "Cannot find system editline libraries.") 
+       ENDIF()
++    ELSE()
++      MESSAGE(FATAL_ERROR "WITH_EDITLINE must be bundled or system")
+     ENDIF()
+   ENDIF(NOT WIN32)
+ ENDMACRO()
+-
+diff --git a/cmd-line-utils/libedit/readline.c b/cmd-line-utils/libedit/readline.c
+index a2a92ed..6f46a7c 100644
+--- a/cmd-line-utils/libedit/readline.c
++++ b/cmd-line-utils/libedit/readline.c
+@@ -51,7 +51,7 @@
+ #else
+ #include "np/vis.h"
+ #endif
+-#include "readline/readline.h"
++#include "editline/readline.h"
+ #include "el.h"
+ #include "fcns.h"		/* for EL_NUM_FCNS */
+ #include "histedit.h"
+diff --git a/config.h.cmake b/config.h.cmake
+index 5591623..db8935e 100644
+--- a/config.h.cmake
++++ b/config.h.cmake
+@@ -120,7 +120,6 @@
+ /* Readline */
+ #cmakedefine HAVE_HIST_ENTRY 1
+ #cmakedefine USE_LIBEDIT_INTERFACE 1
+-#cmakedefine USE_NEW_READLINE_INTERFACE 1
+ 
+ #cmakedefine FIONREAD_IN_SYS_IOCTL 1
+ #cmakedefine GWINSZ_IN_SYS_IOCTL 1
+diff --git a/libmysqld/examples/CMakeLists.txt b/libmysqld/examples/CMakeLists.txt
+index 8ebb3d9..07ed5c5 100644
+--- a/libmysqld/examples/CMakeLists.txt
++++ b/libmysqld/examples/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-# Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
++# Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
+ # 
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+@@ -17,7 +17,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include
+                     ${CMAKE_SOURCE_DIR}/libmysqld/include
+                     ${CMAKE_SOURCE_DIR}/regex 
+                     ${CMAKE_SOURCE_DIR}/tests
+-                    ${READLINE_INCLUDE_DIR}                 
++                    ${EDITLINE_INCLUDE_DIR}                 
+                     )
+ 
+ 
+@@ -28,8 +28,7 @@ MYSQL_ADD_EXECUTABLE(mysql_embedded ../../client/completion_hash.cc
+                ../../client/mysql.cc ../../client/readline.cc)
+ TARGET_LINK_LIBRARIES(mysql_embedded mysqlserver)
+ IF(UNIX)
+-  ADD_DEFINITIONS(${READLINE_DEFINES})
+-  TARGET_LINK_LIBRARIES(mysql_embedded ${READLINE_LIBRARY})
++  TARGET_LINK_LIBRARIES(mysql_embedded ${EDITLINE_LIBRARY})
+   SET_TARGET_PROPERTIES(mysql_embedded PROPERTIES ENABLE_EXPORTS TRUE)
+ ENDIF(UNIX)
+ 
