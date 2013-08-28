@@ -557,7 +557,7 @@ cp ../../mysql-test/rh-skipped-tests.list .
     --mem --parallel=auto --force --retry=0 \
     --skip-test-list=rh-skipped-tests.list \
     --mysqld=--binlog-format=mixed \
-    --suite-timeout=720 --testcase-timeout=30
+    --suite-timeout=720 --testcase-timeout=30 --max-test-fail=0
 rm -rf var/*
 popd
 
