@@ -1,3 +1,5 @@
+%global basever 5.6
+
 # Regression tests may take a long time (many cores recommended), skip them by 
 # passing --nocheck to rpmbuild
 
@@ -17,8 +19,7 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-#Version:          5.6.11
-Version:          5.6.13
+Version:          5.6.14
 Release:          1%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
@@ -28,13 +29,17 @@ URL:              http://www.mysql.com
 # not only GPL code.  See README.mysql-license
 License:          GPLv2 with exceptions
 
-# mysql.info from upstream tarball must be removed, create tarball by:
-#  wget https://cdn.mysql.com/Downloads/MySQL-5.6/mysql-%{version}.tar.gz
-#  tar xvf mysql-%{version}.tar.gz
-#  rm mysql-%{version}/Docs/mysql.info
-#  tar czvf mysql-%{version}-nodocs.tar.gz  mysql-%{version}
-Source0:          mysql-%{version}-nodocs.tar.gz
-Source2:          mysql.init 
+# Upstream has a mirror redirector for downloads, so the URL is hard to
+# represent statically.  You can get the tarball by following a link from
+# http://dev.mysql.com/downloads/mysql/
+Source0: mysql-%{version}-nodocs.tar.gz
+# The upstream tarball includes non-free documentation that we cannot ship.
+# To remove the non-free documentation, run this script after downloading
+# the tarball into the current directory:
+# ./generate-tarball.sh $VERSION
+
+Source1:          generate-tarball.sh
+Source2:          mysql.init
 
 Source3:          my.cnf
 Source4:          scriptstub.c
@@ -144,7 +149,7 @@ Group:            Applications/Databases
 # note: no version here = %{version}-%{release}
 #Requires:         mysql%{?_isa} 
 Requires:         %{name}%{?_isa} 
-Requires:         %{name}-common%{?_isa} = %{version}-%{release}
+Requires:         %{name}-libs%{?_isa} = %{version}-%{release}
 Requires:         sh-utils
 Requires(pre):    /usr/sbin/useradd
 Requires(post):   chkconfig
@@ -278,7 +283,7 @@ the MySQL sources.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
-%patch5 -p1
+#%patch5 -p1
 %patch6 -p1
 #%patch10 -p1
 %patch11 -p1
@@ -837,6 +842,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Thu Sep 26 2013 Ben Harper <ben.harper@rackspace.com> - 5.5.14-1.ius
+- porting from http://home.online.no/~bjornmu/fedora/mysql-community-5.6.13-1.fc19.src.rpm
+
 * Tue Apr 30 2013 Bjorn Munch <bjorn.munch@oracle.com> 5.6.11-1
 - renaming to mysql-community
 - hardened_build (bz #955199)
