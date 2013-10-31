@@ -4,7 +4,7 @@
 # passing --nocheck to rpmbuild
 
 # set to 1 to avoid file conflict
-%global with_shared_lib_major_hack 1
+%global with_shared_lib_major_hack 0
 
 %global _hardened_build 1
 
@@ -20,7 +20,7 @@
 
 Name:             mysql56u
 Version:          5.6.14
-Release:          1%{?dist}
+Release:          2%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -842,7 +842,10 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
-* Thu Sep 26 2013 Ben Harper <ben.harper@rackspace.com> - 5.5.14-1.ius
+* Thu Oct 31 2013 Ben Harper <ben.harper@rackspace.com> - 5.6.14-2.ius
+- disabled with_shared_lib_major_hack as libmysqlclient.so version is now 18.1.0
+
+* Thu Sep 26 2013 Ben Harper <ben.harper@rackspace.com> - 5.6.14-1.ius
 - porting from http://home.online.no/~bjornmu/fedora/mysql-community-5.6.13-1.fc19.src.rpm
 
 * Tue Apr 30 2013 Bjorn Munch <bjorn.munch@oracle.com> 5.6.11-1
