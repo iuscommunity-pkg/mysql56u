@@ -19,8 +19,8 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.14
-Release:          2%{?dist}
+Version:          5.6.15
+Release:          1%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -29,14 +29,7 @@ URL:              http://www.mysql.com
 # not only GPL code.  See README.mysql-license
 License:          GPLv2 with exceptions
 
-# Upstream has a mirror redirector for downloads, so the URL is hard to
-# represent statically.  You can get the tarball by following a link from
-# http://dev.mysql.com/downloads/mysql/
-Source0: mysql-%{version}-nodocs.tar.gz
-# The upstream tarball includes non-free documentation that we cannot ship.
-# To remove the non-free documentation, run this script after downloading
-# the tarball into the current directory:
-# ./generate-tarball.sh $VERSION
+Source0: http://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-%{version}.tar.gz
 
 Source1:          generate-tarball.sh
 Source2:          mysql.init
@@ -288,11 +281,11 @@ the MySQL sources.
 #%patch10 -p1
 %patch11 -p1
 #%patch14 -p1
-%patch15 -p1
+#%patch15 -p1
 %patch16 -p1
 %patch18 -p1
-%patch19 -p1
-%patch20 -p1
+#%patch19 -p1
+#%patch20 -p1
 %patch21 -p1
 %patch23 -p1
 #%patch24 -p1
@@ -842,6 +835,11 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Tue Jan 14 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.15-1.ius
+- Latest sources from upstream
+- changed Source0 to URL to tarball since Oracle has removed non-free documentation and tarball is straightforward to download
+- disabled Patch15, Patch19 and Patch20, patched upstream
+
 * Thu Oct 31 2013 Ben Harper <ben.harper@rackspace.com> - 5.6.14-2.ius
 - disabled with_shared_lib_major_hack as libmysqlclient.so version is now 18.1.0
 
