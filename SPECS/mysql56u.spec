@@ -20,7 +20,7 @@
 
 Name:             mysql56u
 Version:          5.6.15
-Release:          1%{?dist}
+Release:          2%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -69,6 +69,16 @@ Patch23:          mysql-5.6.10-libmysql-version.patch
 Patch24:          mysql-5.6.11-editline.patch
 Patch25:          mysql-5.6.11-mysql-install.patch
 Patch26:          mysql-5.6.11-major.patch
+
+Patch28:          community-mysql-5.6.13-truncate-file.patch
+Patch29:          community-mysql-tmpdir.patch
+Patch30:          community-mysql-cve-2013-1861.patch
+Patch31:          community-mysql-innodbwarn.patch
+Patch32:          community-mysql-covscan-signexpr.patch
+Patch33:          community-mysql-covscan-stroverflow.patch
+Patch34:          community-mysql-pluginerrmsg.patch
+
+
 
 BuildRequires:    cmake
 BuildRequires:    dos2unix
@@ -293,6 +303,13 @@ the MySQL sources.
 %if %{with_shared_lib_major_hack}
 %patch26 -p1
 %endif
+%patch28 -p0
+%patch29 -p1
+%patch30 -p1
+%patch31 -p1
+%patch32 -p1
+%patch33 -p1
+%patch34 -p1
 
 # Workaround for upstream bug #56342
 rm -f mysql-test/t/ssl_8k_key-master.opt
@@ -555,7 +572,7 @@ cp ../../mysql-test/rh-skipped-tests.list .
     --mem --parallel=auto --force --retry=0 \
     --skip-test-list=rh-skipped-tests.list \
     --mysqld=--binlog-format=mixed \
-    --suite-timeout=720 --testcase-timeout=30 --max-test-fail=0
+    --suite-timeout=720 --testcase-timeout=30 --max-test-fail=0 --clean-vardir
 rm -rf var/*
 popd
 
@@ -835,6 +852,10 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Mon Jan 20 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.16-2.ius
+- add Patch28-34 from Fedora http://koji.fedoraproject.org/koji/buildinfo?buildID=485187
+- and --clean-vardir for test suite to attempt to correct some issues in build system
+
 * Tue Jan 14 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.15-1.ius
 - Latest sources from upstream
 - changed Source0 to URL to tarball since Oracle has removed non-free documentation and tarball is straightforward to download
