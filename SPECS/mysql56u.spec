@@ -67,7 +67,7 @@ Patch20:          mysql-string-overflow.patch
 Patch21:          mysql-dh1024.patch
 Patch23:          mysql-5.6.10-libmysql-version.patch
 Patch24:          mysql-5.6.11-editline.patch
-Patch25:          mysql-5.6.11-mysql-install.patch
+Patch25:          mysql-5.6.14-mysql-install.patch
 Patch26:          mysql-5.6.11-major.patch
 
 Patch28:          community-mysql-5.6.13-truncate-file.patch
@@ -852,9 +852,10 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
-* Mon Jan 20 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.16-2.ius
+* Mon Jan 20 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.15-2.ius
 - add Patch28-34 from Fedora http://koji.fedoraproject.org/koji/buildinfo?buildID=485187
 - and --clean-vardir for test suite to attempt to correct some issues in build system
+- updated Patch25 from http://repo.mysql.com/yum/mysql-5.6-community/el/6/SRPMS/mysql-community-5.6.15-1.el6.src.rpm
 
 * Tue Jan 14 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.15-1.ius
 - Latest sources from upstream
