@@ -1,0 +1,97 @@
+##  _______________________________________________________________________ 
+## / Rackspace MySQL 5.6 Terse Configuration File                          \
+## |                                                                       |
+## | This is a base configuration file containing the most frequently used |
+## | settings with reasonably defined default values for configuring and   |
+## | tuning MySQL. Note that these settings can likely be further tuned in |
+## | order to get optimum performance from MySQL based upon the database   |
+## | configuration and hardware platform.                                  |
+## |                                                                       |
+## | While the settings provided are likely sufficient for most            |
+## | situations, an exhaustive list of settings (with descriptions) can be |
+## | found at:                                                             |
+## | http://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html   |
+## |                                                                       |
+## | Take care to only add/remove/change a setting if you are comfortable  |
+## | doing so! For Rackspace customers, if you have any questions or       |
+## | concerns, please contact the MySQL Database Services Team. Be aware   |
+## | that some work performed by this team can involve additional billable |
+## \ fees.                                                                 /
+##  ----------------------------------------------------------------------- 
+##         \   ^__^
+##          \  (oo)\_______
+##             (__)\       )\/\
+##                 ||----w |
+##                 ||     ||
+
+[mysqld]
+
+## General
+datadir                         = /var/lib/mysql
+tmpdir                          = /var/lib/mysqltmp
+socket                          = /var/lib/mysql/mysql.sock
+skip-name-resolve
+sql-mode                        = NO_ENGINE_SUBSTITUTION
+#event-scheduler                = 1
+
+## Cache
+thread-cache-size               = 16
+table-open-cache                = 4096
+table-definition-cache          = 2048
+query-cache-size                = 32M 
+query-cache-limit               = 1M
+
+## Per-thread Buffers
+#sort-buffer-size               = 2M
+
+## Temp Tables
+#tmp-table-size                 = 16M 
+#max-heap-table-size            = 16M 
+
+## Networking
+back-log                        = 100
+max-connections                 = 400
+max-connect-errors              = 10000
+max-allowed-packet              = 16M
+interactive-timeout             = 3600
+wait-timeout                    = 600
+
+### Storage Engines
+
+## MyISAM
+key-buffer-size                 = 64M 
+myisam-sort-buffer-size         = 128M
+
+## InnoDB
+#innodb-buffer-pool-size        = 128M
+#innodb-log-file-size           = 128M
+#innodb-log-buffer-size         = 8M
+#innodb-file-per-table          = 1
+
+## Replication
+server-id                       = 1
+#log-bin                        = /var/log/mysql/bin-log
+#relay-log                      = /var/log/mysql/relay-log
+relay-log-space-limit           = 16G
+expire-logs-days                = 7
+#read-only                      = 1
+#sync-binlog                    = 1
+#log-slave-updates              = 1
+#binlog-format                  = STATEMENT
+#auto-increment-offset          = 1
+#auto-increment-increment       = 2
+
+## Logging
+#log-output                      = FILE
+#slow-query-log                  = 1
+#slow-query-log-file             = /var/lib/mysqllogs/slow-log
+#log-slow-slave-statements
+#log-slow-admin-statements
+#long-query-time                 = 2
+
+[mysqld_safe]
+log-error                       = /var/log/mysqld.log
+open-files-limit                = 65535
+
+[mysql]
+no-auto-rehash

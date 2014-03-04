@@ -19,8 +19,8 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.15
-Release:          2%{?dist}
+Version:          5.6.16
+Release:          1%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -48,6 +48,10 @@ Source14:         rh-skipped-tests-base.list
 Source15:         rh-skipped-tests-arm.list
 # To track rpmlint warnings
 Source17:         mysql-5.6.10-rpmlintrc
+
+Source100: my-56-terse.cnf
+Source101: my-56-verbose.cnf
+Source102: mysql.logrotate
 
 # Comments for these patches are in the patch files
 Patch1:           mysql-errno.patch
@@ -282,6 +286,10 @@ the MySQL sources.
 
 %prep
 %setup -q -n mysql-%{version}
+
+# my-55-verbose.cnf
+cp %{SOURCE101} .
+
 #%patch1 -p1
 %patch2 -p1
 %patch3 -p1
@@ -305,10 +313,10 @@ the MySQL sources.
 %endif
 %patch28 -p0
 %patch29 -p1
-%patch30 -p1
+#%patch30 -p1
 %patch31 -p1
-%patch32 -p1
-%patch33 -p1
+#%patch32 -p1
+#%patch33 -p1
 %patch34 -p1
 
 # Workaround for upstream bug #56342
@@ -364,13 +372,13 @@ cmake .. -DBUILD_CONFIG=mysql_release \
          -DINSTALL_INFODIR=share/info \
          -DINSTALL_LIBDIR="%{_lib}/mysql" \
          -DINSTALL_MANDIR=share/man \
-         -DINSTALL_MYSQLSHAREDIR=share/%{name} \
+         -DINSTALL_MYSQLSHAREDIR=share/mysql \
          -DINSTALL_MYSQLTESTDIR=share/mysql-test \
          -DINSTALL_PLUGINDIR="%{_lib}/mysql/plugin" \
          -DINSTALL_SBINDIR=libexec \
          -DINSTALL_SCRIPTDIR=bin \
          -DINSTALL_SQLBENCHDIR=share \
-         -DINSTALL_SUPPORTFILESDIR=share/%{name} \
+         -DINSTALL_SUPPORTFILESDIR=share/mysql \
          -DMYSQL_DATADIR="/var/lib/mysql" \
          -DMYSQL_UNIX_ADDR="/var/lib/mysql/mysql.sock" \
          -DENABLED_LOCAL_INFILE=ON \
@@ -404,6 +412,9 @@ LD_LIBRARY_PATH=. ldd ./a.out
 
 
 %install
+mkdir -p %{buildroot}/var/log/mysql \
+         %{buildroot}/var/lib/mysqllogs \
+         %{buildroot}/var/lib/mysqltmp
 pushd build
 make DESTDIR=%{buildroot} install
 
@@ -471,6 +482,13 @@ install -m 0755 libmysqld/work/libmysqld.so.0.0.1 %{buildroot}%{_libdir}/mysql/l
 ln -s libmysqld.so.0.0.1 %{buildroot}%{_libdir}/mysql/libmysqld.so.0
 ln -s libmysqld.so.0 %{buildroot}%{_libdir}/mysql/libmysqld.so
 
+# install my-55-terse.cnf
+install -m 0644 %{SOURCE100} ${RPM_BUILD_ROOT}%{_sysconfdir}/my.cnf
+
+# logrotate
+mkdir -p %{buildroot}/etc/logrotate.d/
+install -m 0644 %{SOURCE102} %{buildroot}/etc/logrotate.d/mysqld
+
 # libmysqlclient_r is no more.  Upstream tries to replace it with symlinks
 # but that really doesn't work (wrong soname in particular).  We'll keep
 # just the devel libmysqlclient_r.so link, so that rebuilding without any
@@ -487,18 +505,18 @@ ln -s ../../../../../bin/my_safe_process %{buildroot}%{_datadir}/mysql-test/lib/
 rm -f %{buildroot}%{_bindir}/mysqlaccess.conf
 rm -f %{buildroot}%{_bindir}/mysql_embedded
 rm -f %{buildroot}%{_libdir}/mysql/*.a
-rm -f %{buildroot}%{_datadir}/%{name}/binary-configure
-rm -f %{buildroot}%{_datadir}/%{name}/magic
-rm -f %{buildroot}%{_datadir}/%{name}/mysql.server
-rm -f %{buildroot}%{_datadir}/%{name}/mysqld_multi.server
-rm -rf %{buildroot}%{_datadir}/%{name}/solaris
+rm -f %{buildroot}%{_datadir}/mysql/binary-configure
+rm -f %{buildroot}%{_datadir}/mysql/magic
+rm -f %{buildroot}%{_datadir}/mysql/mysql.server
+rm -f %{buildroot}%{_datadir}/mysql/mysqld_multi.server
+rm -rf %{buildroot}%{_datadir}/mysql/solaris
 rm -f %{buildroot}%{_mandir}/man1/comp_err.1*
 rm -f %{buildroot}%{_mandir}/man1/mysql-stress-test.pl.1*
 rm -f %{buildroot}%{_mandir}/man1/mysql-test-run.pl.1*
 
 # put logrotate script where it needs to be
 mkdir -p %{buildroot}%{_sysconfdir}/logrotate.d
-mv %{buildroot}%{_datadir}/%{name}/mysql-log-rotate %{buildroot}%{_sysconfdir}/logrotate.d/mysqld
+mv %{buildroot}%{_datadir}/mysql/mysql-log-rotate %{buildroot}%{_sysconfdir}/logrotate.d/mysqld
 chmod 644 %{buildroot}%{_sysconfdir}/logrotate.d/mysqld
 
 mkdir -p %{buildroot}/etc/ld.so.conf.d
@@ -515,7 +533,7 @@ cp %{SOURCE7} README.mysql-license
 install -m 0644 mysql-test/rh-skipped-tests.list %{buildroot}%{_datadir}/mysql-test
 
 # Upstream bugs: http://bugs.mysql.com/68517 http://bugs.mysql.com/68519  http://bugs.mysql.com/68521
-chmod 0644 %{buildroot}/usr/share/%{name}/innodb_memcached_config.sql
+chmod 0644 %{buildroot}/usr/share/mysql/innodb_memcached_config.sql
 find %{buildroot}/usr/share/mysql-test/{r,suite,t} -type f -print0 | xargs --null chmod 0644
 chmod 0644 %{buildroot}/usr/share/mysql-test/include/{start_mysqld,shutdown_mysqld,check_ipv4_mapped}.inc
 for f in std_data/checkDBI_DBD-mysql.pl suite/engines/rr_trx/run_stress_tx_rr.pl \
@@ -704,32 +722,32 @@ fi
 
 %files common
 %dir %{_sysconfdir}/my.cnf.d
-%dir %{_datadir}/%{name}
-%{_datadir}/%{name}/english
-%lang(bg) %{_datadir}/%{name}/bulgarian
-%lang(cs) %{_datadir}/%{name}/czech
-%lang(da) %{_datadir}/%{name}/danish
-%lang(nl) %{_datadir}/%{name}/dutch
-%lang(et) %{_datadir}/%{name}/estonian
-%lang(fr) %{_datadir}/%{name}/french
-%lang(de) %{_datadir}/%{name}/german
-%lang(el) %{_datadir}/%{name}/greek
-%lang(hu) %{_datadir}/%{name}/hungarian
-%lang(it) %{_datadir}/%{name}/italian
-%lang(ja) %{_datadir}/%{name}/japanese
-%lang(ko) %{_datadir}/%{name}/korean
-%lang(no) %{_datadir}/%{name}/norwegian
-%lang(no) %{_datadir}/%{name}/norwegian-ny
-%lang(pl) %{_datadir}/%{name}/polish
-%lang(pt) %{_datadir}/%{name}/portuguese
-%lang(ro) %{_datadir}/%{name}/romanian
-%lang(ru) %{_datadir}/%{name}/russian
-%lang(sr) %{_datadir}/%{name}/serbian
-%lang(sk) %{_datadir}/%{name}/slovak
-%lang(es) %{_datadir}/%{name}/spanish
-%lang(sv) %{_datadir}/%{name}/swedish
-%lang(uk) %{_datadir}/%{name}/ukrainian
-%{_datadir}/%{name}/charsets
+%dir %{_datadir}/mysql
+%{_datadir}/mysql/english
+%lang(bg) %{_datadir}/mysql/bulgarian
+%lang(cs) %{_datadir}/mysql/czech
+%lang(da) %{_datadir}/mysql/danish
+%lang(nl) %{_datadir}/mysql/dutch
+%lang(et) %{_datadir}/mysql/estonian
+%lang(fr) %{_datadir}/mysql/french
+%lang(de) %{_datadir}/mysql/german
+%lang(el) %{_datadir}/mysql/greek
+%lang(hu) %{_datadir}/mysql/hungarian
+%lang(it) %{_datadir}/mysql/italian
+%lang(ja) %{_datadir}/mysql/japanese
+%lang(ko) %{_datadir}/mysql/korean
+%lang(no) %{_datadir}/mysql/norwegian
+%lang(no) %{_datadir}/mysql/norwegian-ny
+%lang(pl) %{_datadir}/mysql/polish
+%lang(pt) %{_datadir}/mysql/portuguese
+%lang(ro) %{_datadir}/mysql/romanian
+%lang(ru) %{_datadir}/mysql/russian
+%lang(sr) %{_datadir}/mysql/serbian
+%lang(sk) %{_datadir}/mysql/slovak
+%lang(es) %{_datadir}/mysql/spanish
+%lang(sv) %{_datadir}/mysql/swedish
+%lang(uk) %{_datadir}/mysql/ukrainian
+%{_datadir}/mysql/charsets
 
 %files server
 %doc README COPYING README.mysql-license
@@ -795,15 +813,15 @@ fi
 %{_mandir}/man1/mysql_tzinfo_to_sql.1*
 %{_mandir}/man8/mysqld.8*
 
-%{_datadir}/%{name}/dictionary.txt
-%{_datadir}/%{name}/errmsg-utf8.txt
-%{_datadir}/%{name}/fill_help_tables.sql
-%{_datadir}/%{name}/innodb_memcached_config.sql
-%{_datadir}/%{name}/mysql_security_commands.sql
-%{_datadir}/%{name}/mysql_system_tables.sql
-%{_datadir}/%{name}/mysql_system_tables_data.sql
-%{_datadir}/%{name}/mysql_test_data_timezone.sql
-%{_datadir}/%{name}/my-*.cnf
+%{_datadir}/mysql/dictionary.txt
+%{_datadir}/mysql/errmsg-utf8.txt
+%{_datadir}/mysql/fill_help_tables.sql
+%{_datadir}/mysql/innodb_memcached_config.sql
+%{_datadir}/mysql/mysql_security_commands.sql
+%{_datadir}/mysql/mysql_system_tables.sql
+%{_datadir}/mysql/mysql_system_tables_data.sql
+%{_datadir}/mysql/mysql_test_data_timezone.sql
+%{_datadir}/mysql/my-*.cnf
 
 %if 0%{?fedora} > 14
 %{_unitdir}/mysqld.service
@@ -818,6 +836,7 @@ fi
 
 %attr(0755,mysql,mysql) %dir /var/run/mysqld
 %attr(0755,mysql,mysql) %dir /var/lib/mysql
+%attr(0755,mysql,mysql) %dir %{_localstatedir}/lib/mysqltmp/
 %attr(0640,mysql,mysql) %config(noreplace) %verify(not md5 size mtime) /var/log/mysqld.log
 %config(noreplace) %{_sysconfdir}/logrotate.d/mysqld
 
@@ -852,6 +871,16 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Tue Mar 04 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.16-1.ius
+- Latest sources from upstream
+- various updates to insure the use of /usr/share/mysql and not /usr/share/mysql56u
+- added my-56-terse.cnf, my-56-verbose.cnf and mysql.logrotate
+- updated mysql.init not to overwrite our my.cnf with stock my.cnf
+- disable Patch30, Patch31 and Patch32, patched upstream
+- update Patch25 from http://repo.mysql.com/yum/mysql-5.6-community/el/6/SRPMS/mysql-community-5.6.16-1.el6.src.rpm
+- update Patch29, mostly patched upstream
+
+
 * Mon Jan 20 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.15-2.ius
 - add Patch28-34 from Fedora http://koji.fedoraproject.org/koji/buildinfo?buildID=485187
 - and --clean-vardir for test suite to attempt to correct some issues in build system

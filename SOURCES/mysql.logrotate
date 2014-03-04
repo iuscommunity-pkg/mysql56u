@@ -1,0 +1,20 @@
+# /var/lib/mysqllogs/slow-log {
+#     daily
+#     rotate 5
+#     missingok
+#     delaycompress
+#     create 0640 mysql mysql
+#     # skip 'notifempty'
+# 
+#    postrotate
+#         MYCNF_FILE=/root/.my.cnf
+#         MYSQLADMIN=/usr/bin/mysqladmin
+#         if test -x $MYSQLADMIN && \
+#                 $MYSQLADMIN --defaults-file="$MYCNF_FILE" ping >/dev/null
+#         then
+#             $MYSQLADMIN --defaults-file="$MYCNF_FILE" flush-logs
+#         fi
+#     endscript
+# }
+# 
+## Intentionally not rotating mysqld.log

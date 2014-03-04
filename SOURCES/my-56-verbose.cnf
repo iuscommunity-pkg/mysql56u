@@ -1,0 +1,165 @@
+##  _______________________________________________________________________
+## / Rackspace MySQL 5.6 Commented Configuration File                      \
+## |                                                                       |
+## | This is a base configuration file containing the most frequently used |
+## | settings with reasonably defined default values for configuring and   |
+## | tuning MySQL. Note that these settings can likely be further tuned in |
+## | order to get optimum performance from MySQL based upon the database   |
+## | configuration and hardware platform.                                  |
+## |                                                                       |
+## | While the settings provided are likely sufficient for most            |
+## | situations, an exhaustive list of settings (with descriptions) can be |
+## | found at:                                                             |
+## | http://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html   |
+## |                                                                       |
+## | Take care to only add/remove/change a setting if you are comfortable  |
+## | doing so! For Rackspace customers, if you have any questions or       |
+## | concerns, please contact the MySQL Database Services Team. Be aware   |
+## | that some work performed by this team can involve additional billable |
+## \ fees.                                                                 /
+##  -----------------------------------------------------------------------
+##         \   ^__^
+##          \  (oo)\_______
+##             (__)\       )\/\
+##                 ||----w |
+##                 ||     ||
+
+[mysqld]
+
+### General
+datadir                         = /var/lib/mysql
+tmpdir                          = /var/lib/mysqltmp
+socket                          = /var/lib/mysql/mysql.sock
+
+## This prevents using host-based authentication. That means users must be
+## created using an ip-address (ie 'myuser'@'192.168.100.1') or must make
+## use of the % wildcard (ie 'myuser'@'%'). The benefit to not using
+## host-based authentication is that DNS will not impact MySQL performance.
+skip-name-resolve
+
+## Set this to change the way MySQL handles validation, data conversion, etc.
+sql-mode                        = NO_ENGINE_SUBSTITUTION
+
+#event-scheduler                = 1
+
+### Cache
+thread-cache-size               = 16
+table-open-cache                = 4096
+table-definition-cache          = 2048
+
+## Generally, it is unwise to set the query cache to be larger than 64-128M 
+## as the costs associated with maintaining the cache outweigh the performance
+## gains. A far superior solution would be to implement memcached, though this
+## required modifying the application, among other things.
+query-cache-size                = 32M 
+query-cache-limit               = 1M
+
+### Per-thread Buffers
+#sort-buffer-size               = 2M
+
+### Temp Tables
+#tmp-table-size                 = 16M 
+#max-heap-table-size            = 16M 
+
+### Networking
+back-log                        = 100
+max-connections                 = 400
+max-connect-errors              = 10000
+max-allowed-packet              = 16M
+interactive-timeout             = 3600
+wait-timeout                    = 600
+
+#### Storage Engines
+
+### MyISAM
+## Not sure what to set this to?
+## Try running a 'du -sch /var/lib/mysql/*/*.MYI'
+## This will give you a good estimate on the size of all the MyISAM indexes.
+## (The buffer may not need to set that high, however)
+key-buffer-size                 = 64M 
+## This setting controls the size of the buffer that is allocated when 
+## sorting MyISAM indexes during a REPAIR TABLE or when creating indexes 
+## with CREATE INDEX or ALTER TABLE.
+myisam-sort-buffer-size         = 128M
+
+### InnoDB
+## Note: While most settings in MySQL can be set at run-time, many InnoDB
+## variables cannot be set at runtime as require restarting MySQL
+###
+## These settings control how much RAM InnoDB will use. Generally, when using
+## mostly InnoDB tables, the innodb-buffer-pool-size should be as large as
+## is possible without swapping or starving other processes of RAM. The other 
+## two settings usually do not need to be changed, but can help for very large 
+## datasets.
+#innodb-buffer-pool-size        = 128M
+#innodb-log-buffer-size         = 8M
+
+## innodb-file-per-table can offer quite a few advantages, but does not work
+## well when using it with a very large number of tables.
+## If innodb-file-per-table is used, be sure to set innodb-open-files 
+## appropriately (which is roughly similar to open-files-limit, but is
+## exclusive to InnoDB)
+#innodb-file-per-table          = 1
+#innodb-open-files              = 300
+
+## Be careful when changing these as they require re-generating the 
+## ib-logfile* files, which must be done carefully. Do not change this unless 
+## you are familiar with the procedure.
+#innodb-log-file-size           = 128M
+
+
+### Replication
+
+## Tired of running into replication errors due to having the same server
+## id on two servers? Consider changing this variable to the Rackspace
+## server number.
+server-id                       = 1
+
+## This sets the format used when logging to the binary log
+## - ROW will force row-based logging
+## - STATEMENT will force statement-based (ie pre 5.1) logging
+## - MIXED wil use both, depending on the situation
+## Note that this setting has implications for both replication and
+## backups, so do not change this unless you know what you are doing!
+#binlog-format                  = STATEMENT
+
+#log-bin                        = /var/log/mysql/bin-log
+#relay-log                      = /var/log/mysql/relay-log
+relay-log-space-limit           = 16G
+expire-logs-days                = 7
+
+## This should be enabled on conventional MySQL slaves
+#read-only                      = 1
+
+## Enable this to make replication more resilient against server 
+## crashes and restarts, at the expense of higher I/O on the server.
+#sync-binlog                    = 1
+
+## This is usually only needed when setting up chained replication.
+#log-slave-updates              = 1
+
+## Uncomment the following when enabling multi-master replication
+## Do NOT uncomment these unless you know exactly what you are doing!
+#auto-increment-offset          = 1
+#auto-increment-increment       = 2
+
+### Logging
+## This option determines the destination for general query log and slow query log output.
+## The option value can be given as one or more of the words TABLE, FILE, or NONE.
+## In addition, you cannot backup the contents of these tables properly
+## (mysqldump skips these tables by default since they cannot be locked)
+#log-output                     = FILE
+#slow-query-log                 = 1
+#slow-query-log-file            = /var/lib/mysqllogs/slow-log
+#log-slow-slave-statements
+#log-slow-admin-statements
+#long-query-time                = 2
+
+[mysqld_safe]
+log-error                       = /var/log/mysqld.log
+## If open-files-limit is set very low, MySQL may increase on its own. Either
+## way, increase this if MySQL gives 'too many open files' errors.
+open-files-limit                = 65535
+
+[mysql]
+no-auto-rehash

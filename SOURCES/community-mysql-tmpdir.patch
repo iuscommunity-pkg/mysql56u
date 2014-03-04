@@ -10,31 +10,6 @@ RHBZ#962087
 Upstream bug report: https://mariadb.atlassian.net/browse/MDEV-4165
 MySQL bug report: http://bugs.mysql.com/bug.php?id=68338
 
-diff -up mysql-5.6.14/CMakeLists.txt.tmpdir mysql-5.6.14/CMakeLists.txt
---- mysql-5.6.14/CMakeLists.txt.tmpdir	2013-09-10 09:38:25.000000000 +0200
-+++ mysql-5.6.14/CMakeLists.txt	2013-10-09 14:49:14.115887439 +0200
-@@ -309,6 +309,10 @@ IF(SYSCONFDIR)
-   SET(DEFAULT_SYSCONFDIR "${SYSCONFDIR}")
- ENDIF()
- 
-+IF(TMPDIR)
-+  SET(DEFAULT_TMPDIR "${TMPDIR}")
-+ENDIF()
-+
- 
- # Run platform tests
- INCLUDE(configure.cmake)
-diff -up mysql-5.6.14/config.h.cmake.tmpdir mysql-5.6.14/config.h.cmake
---- mysql-5.6.14/config.h.cmake.tmpdir	2013-09-10 09:38:25.000000000 +0200
-+++ mysql-5.6.14/config.h.cmake	2013-10-09 14:49:14.115887439 +0200
-@@ -636,6 +636,7 @@
- #cmakedefine DEFAULT_CHARSET_HOME "@DEFAULT_CHARSET_HOME@"
- #cmakedefine PLUGINDIR "@PLUGINDIR@"
- #cmakedefine DEFAULT_SYSCONFDIR "@DEFAULT_SYSCONFDIR@"
-+#cmakedefine DEFAULT_TMPDIR "@DEFAULT_TMPDIR@"
- 
- #cmakedefine SO_EXT "@CMAKE_SHARED_MODULE_SUFFIX@"
- 
 diff -up mysql-5.6.14/include/my_global.h.tmpdir mysql-5.6.14/include/my_global.h
 --- mysql-5.6.14/include/my_global.h.tmpdir	2013-09-10 09:38:25.000000000 +0200
 +++ mysql-5.6.14/include/my_global.h	2013-10-09 14:49:14.116887439 +0200
@@ -49,39 +24,4 @@ diff -up mysql-5.6.14/include/my_global.h.tmpdir mysql-5.6.14/include/my_global.
 +#define DEFAULT_TMPDIR P_tmpdir
 +#endif
 +
-diff -up mysql-5.6.14/libmysqld/lib_sql.cc.tmpdir mysql-5.6.14/libmysqld/lib_sql.cc
---- mysql-5.6.14/libmysqld/lib_sql.cc.tmpdir	2013-09-10 09:38:26.000000000 +0200
-+++ mysql-5.6.14/libmysqld/lib_sql.cc	2013-10-09 14:49:14.116887439 +0200
-@@ -587,7 +587,7 @@ int init_embedded_server(int argc, char
-     opt_mysql_tmpdir=getenv("TMP");
- #endif
-   if (!opt_mysql_tmpdir || !opt_mysql_tmpdir[0])
--    opt_mysql_tmpdir=(char*) P_tmpdir;		/* purecov: inspected */
-+    opt_mysql_tmpdir=(char*) DEFAULT_TMPDIR;		/* purecov: inspected */
- 
-   init_ssl();
-   umask(((~my_umask) & 0666));
-diff -up mysql-5.6.14/mysys/mf_tempdir.c.tmpdir mysql-5.6.14/mysys/mf_tempdir.c
---- mysql-5.6.14/mysys/mf_tempdir.c.tmpdir	2013-09-10 09:38:25.000000000 +0200
-+++ mysql-5.6.14/mysys/mf_tempdir.c	2013-10-09 14:49:14.116887439 +0200
-@@ -43,7 +43,7 @@ my_bool init_tmpdir(MY_TMPDIR *tmpdir, c
-       pathlist=getenv("TMP");
- #endif
-     if (!pathlist || !pathlist[0])
--      pathlist=(char*) P_tmpdir;
-+      pathlist=(char*) DEFAULT_TMPDIR;
-   }
-   do
-   {
-diff -up mysql-5.6.14/mysys/mf_tempfile.c.tmpdir mysql-5.6.14/mysys/mf_tempfile.c
---- mysql-5.6.14/mysys/mf_tempfile.c.tmpdir	2013-09-10 09:38:25.000000000 +0200
-+++ mysql-5.6.14/mysys/mf_tempfile.c	2013-10-09 14:49:14.117887440 +0200
-@@ -111,7 +111,7 @@ File create_temp_file(char *to, const ch
- 				    sizeof(prefix_buff)-7),"XXXXXX") -
- 		     prefix_buff);
-     if (!dir && ! (dir =getenv("TMPDIR")))
--      dir=P_tmpdir;
-+      dir=DEFAULT_TMPDIR;
-     if (strlen(dir)+ pfx_len > FN_REFLEN-2)
-     {
-       errno=my_errno= ENAMETOOLONG;
+
