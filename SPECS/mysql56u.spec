@@ -19,7 +19,7 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.16
+Version:          5.6.17
 Release:          1%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
@@ -311,7 +311,7 @@ cp %{SOURCE101} .
 %if %{with_shared_lib_major_hack}
 %patch26 -p1
 %endif
-%patch28 -p0
+#%patch28 -p0
 %patch29 -p1
 #%patch30 -p1
 %patch31 -p1
@@ -871,6 +871,11 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Wed Apr 02 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.17-1.ius
+- Latest sources from upstream
+- disable Patch28, patched upstream
+- update Patch25, mostly patched upstream
+
 * Tue Mar 04 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.16-1.ius
 - Latest sources from upstream
 - various updates to insure the use of /usr/share/mysql and not /usr/share/mysql56u
