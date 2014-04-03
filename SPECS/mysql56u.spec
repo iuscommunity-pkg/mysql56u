@@ -875,6 +875,7 @@ fi
 - Latest sources from upstream
 - disable Patch28, patched upstream
 - update Patch25, mostly patched upstream
+- updated my-56-terse.cnf
 
 * Tue Mar 04 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.16-1.ius
 - Latest sources from upstream

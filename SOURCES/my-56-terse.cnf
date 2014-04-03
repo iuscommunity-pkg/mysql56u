@@ -1,96 +1,104 @@
-##  _______________________________________________________________________ 
-## / Rackspace MySQL 5.6 Terse Configuration File                          \
-## |                                                                       |
-## | This is a base configuration file containing the most frequently used |
-## | settings with reasonably defined default values for configuring and   |
-## | tuning MySQL. Note that these settings can likely be further tuned in |
-## | order to get optimum performance from MySQL based upon the database   |
-## | configuration and hardware platform.                                  |
-## |                                                                       |
-## | While the settings provided are likely sufficient for most            |
-## | situations, an exhaustive list of settings (with descriptions) can be |
-## | found at:                                                             |
-## | http://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html   |
-## |                                                                       |
-## | Take care to only add/remove/change a setting if you are comfortable  |
-## | doing so! For Rackspace customers, if you have any questions or       |
-## | concerns, please contact the MySQL Database Services Team. Be aware   |
-## | that some work performed by this team can involve additional billable |
-## \ fees.                                                                 /
-##  ----------------------------------------------------------------------- 
-##         \   ^__^
-##          \  (oo)\_______
-##             (__)\       )\/\
-##                 ||----w |
-##                 ||     ||
+###  _______________________________________________________________________
+### / Rackspace MySQL 5.6 Terse Configuration File                          \
+### |                                                                       |
+### | This is a base configuration file containing the most frequently used |
+### | settings with reasonably defined default values for configuring and   |
+### | tuning MySQL. Note that these settings can likely be further tuned in |
+### | order to get optimum performance from MySQL based upon the database   |
+### | configuration and hardware platform.                                  |
+### |                                                                       |
+### | For many deployments, the only variables which need to be modified    |
+### | below are max-connections and innodb-buffer-pool-size.                |
+### |                                                                       |
+### \ http://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html   /
+###  -----------------------------------------------------------------------
+###         \   ^__^
+###          \  (oo)\_______
+###             (__)\       )\/\
+###                 ||----w |
+###                 ||     ||
 
 [mysqld]
 
-## General
+### General
+ignore-db-dirs                  = lost+found
 datadir                         = /var/lib/mysql
+#event-scheduler                = 1
 tmpdir                          = /var/lib/mysqltmp
 socket                          = /var/lib/mysql/mysql.sock
-skip-name-resolve
-sql-mode                        = NO_ENGINE_SUBSTITUTION
-#event-scheduler                = 1
+#sql-mode                       = NO_ENGINE_SUBSTITUTION
 
-## Cache
-thread-cache-size               = 16
+### Cache
+table-definition-cache          = 4096
 table-open-cache                = 4096
-table-definition-cache          = 2048
-query-cache-size                = 32M 
-query-cache-limit               = 1M
+table-open-cache-instances      = 8
+#thread-cache-size              = 16
+#query-cache-size               = 32M 
+#query-cache-type               = on
 
-## Per-thread Buffers
-#sort-buffer-size               = 2M
+### Per-thread Buffers
+#sort-buffer-size               = 512K
+#read-buffer-size               = 512K
+#read-rnd-buffer-size           = 512K
+#join-buffer-size               = 512K
 
-## Temp Tables
+### Temp Tables
 #tmp-table-size                 = 16M 
 #max-heap-table-size            = 16M 
 
-## Networking
-back-log                        = 100
+### Networking
+#back-log                       = 128
+#interactive-timeout            = 28800
 max-connections                 = 400
-max-connect-errors              = 10000
+max-connect-errors              = 1000000
 max-allowed-packet              = 16M
-interactive-timeout             = 3600
+skip-name-resolve
 wait-timeout                    = 600
 
 ### Storage Engines
 
-## MyISAM
+### MyISAM
 key-buffer-size                 = 64M 
 myisam-sort-buffer-size         = 128M
+#myisam-recover                 = FORCE,BACKUP
 
-## InnoDB
+### InnoDB
 #innodb-buffer-pool-size        = 128M
-#innodb-log-file-size           = 128M
+#innodb-file-per-table          = on
 #innodb-log-buffer-size         = 8M
-#innodb-file-per-table          = 1
+#innodb-log-file-size           = 128M
+#innodb-open-files              = 300
 
-## Replication
-server-id                       = 1
-#log-bin                        = /var/log/mysql/bin-log
-#relay-log                      = /var/log/mysql/relay-log
-relay-log-space-limit           = 16G
-expire-logs-days                = 7
-#read-only                      = 1
-#sync-binlog                    = 1
-#log-slave-updates              = 1
-#binlog-format                  = STATEMENT
+### Replication
 #auto-increment-offset          = 1
 #auto-increment-increment       = 2
+#binlog-format                  = STATEMENT
+expire-logs-days                = 7
+#log-bin                        = /var/log/mysql/bin-log
+#log-slave-updates              = 1
+#relay-log                      = /var/log/mysql/relay-log
+relay-log-space-limit           = 16G
+#read-only                      = 1
+#server-id                      = 1
+#slave-net-timeout              = 60
+#master-info-repository         = TABLE
+#relay-log-info-repository      = TABLE
+#sync-binlog                    = 1
+#sync-master-info               = 1
+#sync-relay-log                 = 1
+#sync-relay-log-info            = 1
 
-## Logging
-#log-output                      = FILE
-#slow-query-log                  = 1
-#slow-query-log-file             = /var/lib/mysqllogs/slow-log
+### Logging
+#log-output                     = FILE
 #log-slow-slave-statements
 #log-slow-admin-statements
-#long-query-time                 = 2
+#long-query-time                = 2
+#slow-query-log                 = 1
+#slow-query-log-file            = /var/lib/mysqllogs/slow-log
 
 [mysqld_safe]
 log-error                       = /var/log/mysqld.log
+#malloc-lib                     = /usr/lib64/libjemalloc.so.1
 open-files-limit                = 65535
 
 [mysql]
