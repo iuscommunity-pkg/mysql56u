@@ -1,105 +1,93 @@
-###  _______________________________________________________________________
-### / Rackspace MySQL 5.6 Terse Configuration File                          \
-### |                                                                       |
-### | This is a base configuration file containing the most frequently used |
-### | settings with reasonably defined default values for configuring and   |
-### | tuning MySQL. Note that these settings can likely be further tuned in |
-### | order to get optimum performance from MySQL based upon the database   |
-### | configuration and hardware platform.                                  |
-### |                                                                       |
-### | For many deployments, the only variables which need to be modified    |
-### | below are max-connections and innodb-buffer-pool-size.                |
-### |                                                                       |
-### \ http://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html   /
-###  -----------------------------------------------------------------------
-###         \   ^__^
-###          \  (oo)\_______
-###             (__)\       )\/\
-###                 ||----w |
-###                 ||     ||
+##  _______________________________________________________________________
+## / Rackspace MySQL 5.6 Terse Configuration File                          \
+## |                                                                       |
+## | This is a base configuration file containing the most frequently used |
+## | settings with reasonably defined default values for configuring and   |
+## | tuning MySQL. Note that these settings can likely be further tuned in |
+## | order to get optimum performance from MySQL based upon the database   |
+## | configuration and hardware platform.                                  |
+## |                                                                       |
+## | For many deployments, the only variables which need to be modified    |
+## | below are max-connections and innodb-buffer-pool-size.                |
+## |                                                                       |
+## \ http://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html   /
+##  -----------------------------------------------------------------------
+##         \   ^__^
+##          \  (oo)\_______
+##             (__)\       )\/\
+##                 ||----w |
+##                 ||     ||
 
 [mysqld]
 
-### General
-ignore-db-dirs                  = lost+found
-datadir                         = /var/lib/mysql
-#event-scheduler                = 1
-tmpdir                          = /var/lib/mysqltmp
-socket                          = /var/lib/mysql/mysql.sock
-#sql-mode                       = NO_ENGINE_SUBSTITUTION
+## General
+ignore-db-dir                        = lost+found
+datadir                              = /var/lib/mysql
+socket                               = /var/lib/mysql/mysql.sock
+tmpdir                               = /var/lib/mysqltmp
 
-### Cache
-table-definition-cache          = 4096
-table-open-cache                = 4096
-table-open-cache-instances      = 8
-#thread-cache-size              = 16
-#query-cache-size               = 32M 
-#query-cache-type               = on
+## Cache
+table-definition-cache               = 4096
+table-open-cache                     = 4096
+#table-open-cache-instances          = 1
+#thread-cache-size                   = 16
+#query-cache-size                    = 32M
+#query-cache-type                    = 1
 
-### Per-thread Buffers
-#sort-buffer-size               = 512K
-#read-buffer-size               = 512K
-#read-rnd-buffer-size           = 512K
-#join-buffer-size               = 512K
+## Per-thread Buffers
+#join-buffer-size                    = 512K
+#read-buffer-size                    = 512K
+#read-rnd-buffer-size                = 512K
+#sort-buffer-size                    = 512K
 
-### Temp Tables
-#tmp-table-size                 = 16M 
-#max-heap-table-size            = 16M 
+## Temp Tables
+#max-heap-table-size                 = 64M
+#tmp-table-size                      = 32M
 
-### Networking
-#back-log                       = 128
-#interactive-timeout            = 28800
-max-connections                 = 400
-max-connect-errors              = 1000000
-max-allowed-packet              = 16M
+## Networking
+#interactive-timeout                 = 3600
+max-connections                      = 400
+max-connect-errors                   = 1000000
+max-allowed-packet                   = 16M
 skip-name-resolve
-wait-timeout                    = 600
+wait-timeout                         = 600
 
-### Storage Engines
+## MyISAM
+key-buffer-size                      = 32M
+#myisam-recover                      = FORCE,BACKUP
+myisam-sort-buffer-size              = 128M
 
-### MyISAM
-key-buffer-size                 = 64M 
-myisam-sort-buffer-size         = 128M
-#myisam-recover                 = FORCE,BACKUP
+## InnoDB
+#innodb-buffer-pool-size             = 256M
+innodb-file-format                   = Barracuda
+#innodb-file-per-table               = 1
+#innodb-flush-method                 = O_DIRECT
+#innodb-log-file-size                = 128M
 
-### InnoDB
-#innodb-buffer-pool-size        = 128M
-#innodb-file-per-table          = on
-#innodb-log-buffer-size         = 8M
-#innodb-log-file-size           = 128M
-#innodb-open-files              = 300
+## Replication and PITR
+#binlog-format                       = ROW
+expire-logs-days                     = 7
+#log-bin                             = /var/log/mysql/bin-log
+#log-slave-updates                   = 1
+#max-binlog-size                     = 128M
+#read-only                           = 1
+#relay-log                           = /var/log/mysql/relay-log
+relay-log-space-limit                = 16G
+server-id                            = 1
 
-### Replication
-#auto-increment-offset          = 1
-#auto-increment-increment       = 2
-#binlog-format                  = STATEMENT
-expire-logs-days                = 7
-#log-bin                        = /var/log/mysql/bin-log
-#log-slave-updates              = 1
-#relay-log                      = /var/log/mysql/relay-log
-relay-log-space-limit           = 16G
-#read-only                      = 1
-#server-id                      = 1
-#slave-net-timeout              = 60
-#master-info-repository         = TABLE
-#relay-log-info-repository      = TABLE
-#sync-binlog                    = 1
-#sync-master-info               = 1
-#sync-relay-log                 = 1
-#sync-relay-log-info            = 1
-
-### Logging
-#log-output                     = FILE
-#log-slow-slave-statements
+## Logging
+#log-output                          = FILE
 #log-slow-admin-statements
-#long-query-time                = 2
-#slow-query-log                 = 1
-#slow-query-log-file            = /var/lib/mysqllogs/slow-log
+#log-slow-slave-statements
+#log-warnings                        = 0
+#long-query-time                     = 2
+#slow-query-log                      = 1
+#slow-query-log-file                 = /var/log/mysql/slow-log
 
 [mysqld_safe]
-log-error                       = /var/log/mysqld.log
-#malloc-lib                     = /usr/lib64/libjemalloc.so.1
-open-files-limit                = 65535
+log-error                            = /var/log/mysqld.log
+#malloc-lib                          = /usr/lib64/libjemalloc.so.1
+open-files-limit                     = 65535
 
 [mysql]
 no-auto-rehash

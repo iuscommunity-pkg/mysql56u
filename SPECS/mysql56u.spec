@@ -20,7 +20,7 @@
 
 Name:             mysql56u
 Version:          5.6.17
-Release:          1%{?dist}
+Release:          2%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -871,6 +871,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Wed Apr 09 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.17-2.ius
+- updated my-56-terse.cnf
+
 * Wed Apr 02 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.17-1.ius
 - Latest sources from upstream
 - disable Patch28, patched upstream
