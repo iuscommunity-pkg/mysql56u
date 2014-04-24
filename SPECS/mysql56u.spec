@@ -20,7 +20,7 @@
 
 Name:             mysql56u
 Version:          5.6.17
-Release:          2%{?dist}
+Release:          3%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -81,6 +81,7 @@ Patch31:          community-mysql-innodbwarn.patch
 Patch32:          community-mysql-covscan-signexpr.patch
 Patch33:          community-mysql-covscan-stroverflow.patch
 Patch34:          community-mysql-pluginerrmsg.patch
+Patch99:          mysql-5.6.17-libevent.patch
 
 
 
@@ -318,6 +319,7 @@ cp %{SOURCE101} .
 #%patch32 -p1
 #%patch33 -p1
 %patch34 -p1
+%patch99 -p1
 
 # Workaround for upstream bug #56342
 rm -f mysql-test/t/ssl_8k_key-master.opt
@@ -388,6 +390,7 @@ cmake .. -DBUILD_CONFIG=mysql_release \
          -DWITH_LIBEVENT=system \
          -DWITH_SSL=system \
          -DWITH_ZLIB=system \
+         -DWITH_INNODB_MEMCACHED=on \
 %if %{_hardened_build}
          -DWITH_MYSQLD_LDFLAGS="-Wl,-z,relro,-z,now"
 %endif
@@ -871,6 +874,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Thu Apr 24 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.17-3.ius
+- added patch99 and updated cmake options to include '-DWITH_INNODB_MEMCACHED=ON' based on LP bug #1117674 and MySQL bug #72353
+
 * Wed Apr 09 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.17-2.ius
 - updated my-56-terse.cnf
 
