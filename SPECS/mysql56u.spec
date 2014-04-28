@@ -368,6 +368,7 @@ pushd build
 # so we can't use %%{_datadir} and so forth here.
 cmake .. -DBUILD_CONFIG=mysql_release \
          -DFEATURE_SET="community" \
+         -DCOMPILATION_COMMENT="Distributed by The IUS Community Project" \
          -DINSTALL_LAYOUT=RPM \
          -DCMAKE_INSTALL_PREFIX="%{_prefix}" \
          -DINSTALL_INCLUDEDIR=include/mysql \
@@ -842,6 +843,7 @@ fi
 %attr(0755,mysql,mysql) %dir %{_localstatedir}/lib/mysqltmp/
 %attr(0640,mysql,mysql) %config(noreplace) %verify(not md5 size mtime) /var/log/mysqld.log
 %config(noreplace) %{_sysconfdir}/logrotate.d/mysqld
+%attr(0755,mysql,mysql) %dir /var/log/mysql/
 
 %files devel
 %doc README COPYING README.mysql-license
@@ -876,6 +878,8 @@ fi
 %changelog
 * Thu Apr 24 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.17-3.ius
 - added patch99 and updated cmake options to include '-DWITH_INNODB_MEMCACHED=ON' based on LP bug #1117674 and MySQL bug #72353
+- added /var/log/mysql/ to %files
+- added DCOMPILATION_COMMENT
 
 * Wed Apr 09 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.17-2.ius
 - updated my-56-terse.cnf
