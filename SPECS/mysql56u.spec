@@ -19,8 +19,8 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.17
-Release:          3%{?dist}
+Version:          5.6.19
+Release:          1%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -876,6 +876,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Tue Jun 03 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.19-1.ius
+- Latest sources from upstream
+
 * Thu Apr 24 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.17-3.ius
 - added patch99 and updated cmake options to include '-DWITH_INNODB_MEMCACHED=ON' based on LP bug #1117674 and MySQL bug #72353
 - added /var/log/mysql/ to %files
