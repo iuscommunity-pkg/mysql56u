@@ -23,29 +23,33 @@ diff -up mysql-5.6.14/include/mysql.h.p34 mysql-5.6.14/include/mysql.h
  
  typedef struct st_mysql_rows {
    struct st_mysql_rows *next;		/* list of rows */
-diff -up mysql-5.6.14/mysql-test/r/plugin.result.p34 mysql-5.6.14/mysql-test/r/plugin.result
---- mysql-5.6.14/mysql-test/r/plugin.result.p34	2013-09-10 09:38:27.000000000 +0200
-+++ mysql-5.6.14/mysql-test/r/plugin.result	2013-10-09 15:33:04.523541478 +0200
-@@ -162,3 +162,5 @@ SELECT @@SESSION.example_double_thdvar;
+--- mysql-5.6.20/mysql-test/r/plugin.result     2014-07-18 10:48:41.000000000 -0500
++++ mysql-5.6.20/mysql-test/r/plugin.result.new 2014-07-31 17:42:33.950603949 -0500
+@@ -162,6 +162,8 @@
  @@SESSION.example_double_thdvar
  1000.500000
  UNINSTALL PLUGIN example;
 +UNINSTALL PLUGIN MyISAM;
 +ERROR HY000: Built-in plugins cannot be deleted
-diff -up mysql-5.6.14/mysql-test/t/plugin.test.p34 mysql-5.6.14/mysql-test/t/plugin.test
---- mysql-5.6.14/mysql-test/t/plugin.test.p34	2013-09-10 09:38:27.000000000 +0200
-+++ mysql-5.6.14/mysql-test/t/plugin.test	2013-10-09 15:33:04.524541479 +0200
-@@ -160,3 +160,10 @@ SET SESSION example_double_thdvar = 1000
- SELECT @@SESSION.example_double_thdvar;
+ #
+ # BUG#18008907 - DEADLOCK BETWEEN MYSQL_CHANGE_USER(), SHOW VARIABLES AND INSTALL PLUGIN
+ #
+--- mysql-5.6.20/mysql-test/t/plugin.test       2014-07-18 10:48:40.000000000 -0500
++++ mysql-5.6.20/mysql-test/t/plugin.test.new   2014-07-31 17:46:07.697603949 -0500
+@@ -163,6 +163,13 @@
  
  UNINSTALL PLUGIN example;
-+
+ 
 +#
 +# MDEV-4573 UNINSTALL PLUGIN misleading error message for non-dynamic plugins
 +#
 +--error ER_PLUGIN_DELETE_BUILTIN
 +UNINSTALL PLUGIN MyISAM;
 +
++
+ --echo #
+ --echo # BUG#18008907 - DEADLOCK BETWEEN MYSQL_CHANGE_USER(), SHOW VARIABLES AND INSTALL PLUGIN
+ --echo #
 diff -up mysql-5.6.14/sql/share/errmsg-utf8.txt.p34 mysql-5.6.14/sql/share/errmsg-utf8.txt
 --- mysql-5.6.14/sql/share/errmsg-utf8.txt.p34	2013-09-10 09:38:26.000000000 +0200
 +++ mysql-5.6.14/sql/share/errmsg-utf8.txt	2013-10-09 15:33:04.525541480 +0200
