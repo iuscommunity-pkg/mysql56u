@@ -20,7 +20,7 @@
 
 Name:             mysql56u
 Version:          5.6.20
-Release:          1%{?dist}
+Release:          2%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -320,6 +320,11 @@ cp %{SOURCE101} .
 #%patch33 -p1
 %patch34 -p1
 %patch99 -p1
+
+# fix from http://repo.mysql.com/yum/mysql-5.6-community/el/6/SRPMS/mysql-community-5.6.20-4.el6.src.rpm
+# Avoid dtrace dep
+sed -i -e "1d" mysql-test/std_data/dtrace.d
+chmod 0664 mysql-test/std_data/dtrace.d
 
 # Workaround for upstream bug #56342
 rm -f mysql-test/t/ssl_8k_key-master.opt
@@ -876,6 +881,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Mon Aug 04 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.20-2.ius
+- remove dtrace dependencies
+
 * Fri Aug 01 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.20-1.ius
 - Latest sources from upstream
 - updated Patch25 and Patch34
