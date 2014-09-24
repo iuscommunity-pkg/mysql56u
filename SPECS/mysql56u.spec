@@ -19,8 +19,8 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.20
-Release:          2%{?dist}
+Version:          5.6.21
+Release:          1%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -881,6 +881,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Wed Sep 24 2014 Carl George <carl.george@rackspace.com> - 5.6.21-1.ius
+- Latest upstream
+
 * Mon Aug 04 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.20-2.ius
 - remove dtrace dependencies
 
