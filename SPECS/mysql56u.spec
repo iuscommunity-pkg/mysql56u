@@ -20,7 +20,7 @@
 
 Name:             mysql56u
 Version:          5.6.21
-Release:          1%{?dist}
+Release:          2%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -881,6 +881,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Mon Nov 10 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.21-2.ius
+- update mysql.init, see LP bug 1390900
+
 * Wed Sep 24 2014 Carl George <carl.george@rackspace.com> - 5.6.21-1.ius
 - Latest upstream
 
