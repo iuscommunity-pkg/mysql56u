@@ -20,7 +20,7 @@
 
 Name:             mysql56u
 Version:          5.6.21
-Release:          2%{?dist}
+Release:          3%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -88,7 +88,7 @@ Patch99:          mysql-5.6.17-libevent.patch
 BuildRequires:    cmake
 BuildRequires:    dos2unix
 BuildRequires:    libaio-devel
-BuildRequires:    libedit-devel
+BuildRequires:    ncurses-devel
 BuildRequires:    libevent-devel
 BuildRequires:    openssl-devel
 BuildRequires:    perl
@@ -392,7 +392,7 @@ cmake .. -DBUILD_CONFIG=mysql_release \
          -DENABLED_LOCAL_INFILE=ON \
          -DENABLE_DTRACE=ON \
          -DWITH_EMBEDDED_SERVER=ON \
-         -DWITH_EDITLINE=system \
+         -DWITH_EDITLINE=bundled \
          -DWITH_LIBEVENT=system \
          -DWITH_SSL=system \
          -DWITH_ZLIB=system \
@@ -881,6 +881,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Wed Nov 12 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.21-3.ius
+- change WITH_EDITLINE from system to bundled see LP bug 1392050
+
 * Mon Nov 10 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.21-2.ius
 - update mysql.init, see LP bug 1390900
 
