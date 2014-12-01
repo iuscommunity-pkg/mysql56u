@@ -19,8 +19,8 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.21
-Release:          3%{?dist}
+Version:          5.6.22
+Release:          1%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -881,6 +881,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Mon Dec 01 2014 Ben Harper <ben.harper@rackspace.com> -  5.6.22-1.ius
+- Latest upstream
+
 * Wed Nov 12 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.21-3.ius
 - change WITH_EDITLINE from system to bundled see LP bug 1392050
 
