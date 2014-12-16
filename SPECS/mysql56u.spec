@@ -20,7 +20,7 @@
 
 Name:             mysql56u
 Version:          5.6.22
-Release:          1%{?dist}
+Release:          1.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
