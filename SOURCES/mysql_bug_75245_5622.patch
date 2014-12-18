@@ -1,0 +1,15 @@
+adapted from patch created by Andrew Garner
+see https://bugs.launchpad.net/ius/+bug/1398199
+--- storage/innobase/handler/ha_innodb.cc	2014-11-20 23:39:51.000000000 -0600
++++ storage/innobase/handler/ha_innodb.cc.patch	2014-12-18 11:34:16.221000000 -0600
+@@ -17158,6 +17158,10 @@
+ 
+ 	THD*	thd = current_thd;
+ 
++       if(thd == NULL) {
++               return;
++       }
++
+ 	push_warning_printf(
+ 		thd, Sql_condition::WARN_LEVEL_WARN, HA_ERR_TO_BIG_ROW,
+ 		"Row size too large (> %lu). Changing some columns to TEXT"
