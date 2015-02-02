@@ -54,32 +54,18 @@ Source101: my-56-verbose.cnf
 Source102: mysql.logrotate
 
 # Comments for these patches are in the patch files
-Patch1:           mysql-errno.patch
 Patch2:           mysql-strmov.patch
 Patch3:           mysql-install-test.patch
-Patch4:           mysql-expired-certs.patch
-Patch5:           mysql-stack-guard.patch
 Patch6:           mysql-chain-certs.patch
-Patch10:          mysql-plugin-bool.patch
 Patch11:          mysql-s390-tsc.patch
-Patch14:          mysql-va-list.patch
-Patch15:          mysql-netdevname.patch
 Patch16:          mysql-logrotate.patch
 Patch18:          mysql-5.6.11-cipherspec.patch
-Patch19:          mysql-file-contents.patch
-Patch20:          mysql-string-overflow.patch
 Patch21:          mysql-dh1024.patch
 Patch23:          mysql-5.6.10-libmysql-version.patch
-Patch24:          mysql-5.6.11-editline.patch
 Patch25:          mysql-5.6.14-mysql-install.patch
 Patch26:          mysql-5.6.11-major.patch
-
-Patch28:          community-mysql-5.6.13-truncate-file.patch
 Patch29:          community-mysql-tmpdir.patch
-Patch30:          community-mysql-cve-2013-1861.patch
 Patch31:          community-mysql-innodbwarn.patch
-Patch32:          community-mysql-covscan-signexpr.patch
-Patch33:          community-mysql-covscan-stroverflow.patch
 Patch34:          community-mysql-pluginerrmsg.patch
 Patch99:          mysql-5.6.17-libevent.patch
 
@@ -295,33 +281,20 @@ the MySQL sources.
 # my-55-verbose.cnf
 cp %{SOURCE101} .
 
-#%patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
-#%patch5 -p1
 %patch6 -p1
-#%patch10 -p1
 %patch11 -p1
-#%patch14 -p1
-#%patch15 -p1
 %patch16 -p1
 %patch18 -p1
-#%patch19 -p1
-#%patch20 -p1
 %patch21 -p1
 %patch23 -p1
-#%patch24 -p1
 %patch25 -p1
 %if %{with_shared_lib_major_hack}
 %patch26 -p1
 %endif
-#%patch28 -p0
 %patch29 -p1
-#%patch30 -p1
 %patch31 -p1
-#%patch32 -p1
-#%patch33 -p1
 %patch34 -p1
 %patch99 -p1
 %patch200 -p0
