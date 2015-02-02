@@ -19,8 +19,8 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.22
-Release:          2.ius%{?dist}
+Version:          5.6.23
+Release:          1.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -859,6 +859,11 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Mon Feb 02 2015 Carl George <carl.george@rackspace.com> - 5.6.23-1.ius
+- Latest upstream
+- Patch4 resolved upstream
+- Clean up disabled patches
+
 * Thu Dec 18 2014 Ben Harper <ben.harper@rackspace.com> - 5.6.22-2.ius
 - add Patch200
 
