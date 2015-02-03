@@ -20,7 +20,7 @@
 
 Name:             mysql56u
 Version:          5.6.23
-Release:          1.ius%{?dist}
+Release:          2.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -68,12 +68,6 @@ Patch29:          community-mysql-tmpdir.patch
 Patch31:          community-mysql-innodbwarn.patch
 Patch34:          community-mysql-pluginerrmsg.patch
 Patch99:          mysql-5.6.17-libevent.patch
-
-# adapted from patch created by Andrew Garner
-# See https://bugs.launchpad.net/ius/+bug/1398199
-Patch200:         mysql_bug_75245_5622.patch
-
-
 
 BuildRequires:    cmake
 BuildRequires:    dos2unix
@@ -297,7 +291,6 @@ cp %{SOURCE101} .
 %patch31 -p1
 %patch34 -p1
 %patch99 -p1
-%patch200 -p0
 
 # fix from http://repo.mysql.com/yum/mysql-5.6-community/el/6/SRPMS/mysql-community-5.6.20-4.el6.src.rpm
 # Avoid dtrace dep
@@ -859,6 +852,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Tue Feb 03 2015 Carl George <carl.george@rackspace.com> - 5.6.23-2.ius
+- Patch200 resolved upstream
+
 * Mon Feb 02 2015 Carl George <carl.george@rackspace.com> - 5.6.23-1.ius
 - Latest upstream
 - Patch4 resolved upstream
