@@ -19,7 +19,7 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.25
+Version:          5.6.26
 Release:          1.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
@@ -60,7 +60,8 @@ Patch6:           mysql-chain-certs.patch
 Patch11:          mysql-s390-tsc.patch
 Patch16:          mysql-logrotate.patch
 Patch18:          mysql-5.6.11-cipherspec.patch
-Patch21:          mysql-dh1024.patch
+# Fixed upstream in 5.6.26
+#Patch21:          mysql-dh1024.patch
 Patch23:          mysql-5.6.10-libmysql-version.patch
 Patch25:          mysql-5.6.14-mysql-install.patch
 Patch26:          mysql-5.6.11-major.patch
@@ -281,7 +282,6 @@ cp %{SOURCE101} .
 %patch11 -p1
 %patch16 -p1
 %patch18 -p1
-%patch21 -p1
 %patch23 -p1
 %patch25 -p1
 %if %{with_shared_lib_major_hack}
@@ -852,6 +852,10 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Sat Jul 25 2015 Ben Harper <ben.harper@rackspace.com> - 5.6.26-1.ius
+- Latest upstream
+- Patch21 fixed upstream
+
 * Mon Jun 01 2015 Carl George <carl.george@rackspace.com> - 5.6.25-1.ius
 - Latest upstream
 
