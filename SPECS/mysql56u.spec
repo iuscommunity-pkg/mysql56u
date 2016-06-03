@@ -31,7 +31,6 @@ License:          GPLv2 with exceptions
 
 Source0: http://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-%{version}.tar.gz
 
-Source1:          generate-tarball.sh
 Source2:          mysql.init
 
 Source3:          my.cnf
