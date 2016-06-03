@@ -1,7 +1,9 @@
 %global basever 5.6
 
-# Regression tests may take a long time (many cores recommended), skip them by 
-# passing --nocheck to rpmbuild
+# Regression tests may take a long time (many cores recommended), skip them by
+# passing --nocheck to rpmbuild or by setting runselftest to 0 if defining
+# --nocheck is not possible (e.g. in koji build)
+%{!?runselftest:%global runselftest 0}
 
 # set to 1 to avoid file conflict
 %global with_shared_lib_major_hack 0
@@ -310,12 +312,14 @@ dos2unix -k README
 
 %build
 # fail quickly and obviously if user tries to build as root
-if [ x"$(id -u)" = "x0" ]; then
-    echo "mysql's regression tests fail if run as root."
-    echo "If you really need to build the RPM as root, use"
-    echo "--nocheck to skip the regression tests."
-    exit 1
-fi
+%if %runselftest
+    if [ x"$(id -u)" = "x0" ]; then
+        echo "mysql's regression tests fail if run as root."
+        echo "If you really need to build the RPM as root, use"
+        echo "--nocheck to skip the regression tests."
+        exit 1
+    fi
+%endif
 
 CFLAGS="%{optflags} -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
 # MySQL 4.1.10 definitely doesn't work under strict aliasing; also,
@@ -538,6 +542,7 @@ cp -p %{buildroot}/usr/share/man/man1/mysql_client_test.1 %{buildroot}/usr/share
 mkdir %{buildroot}%{_sysconfdir}/my.cnf.d
 
 %check
+%if %runselftest
 pushd build
 # Hack to let 32- and 64-bit tests run concurrently on same build machine
 case $(uname -m) in
@@ -572,6 +577,8 @@ cp ../../mysql-test/rh-skipped-tests.list .
     --suite-timeout=720 --testcase-timeout=30 --max-test-fail=0 --clean-vardir
 rm -rf var/*
 popd
+%endif
+
 
 %pre server
 /usr/sbin/groupadd -g 27 -o -r mysql >/dev/null 2>&1 || :
