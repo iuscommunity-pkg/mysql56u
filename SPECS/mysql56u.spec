@@ -858,6 +858,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Fri Jul 29 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.32-1.ius
+- Latest upstream
+
 * Fri Jun 03 2016 Carl George <carl.george@rackspace.com> - 5.6.31-1.ius
 - Latest upstream
 
