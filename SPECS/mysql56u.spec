@@ -21,7 +21,7 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.31
+Version:          5.6.32
 Release:          1.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
