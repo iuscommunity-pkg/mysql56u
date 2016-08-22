@@ -863,7 +863,7 @@ fi
 
 %changelog
 * Mon Aug 22 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.32-2.ius
-- update STOPTIMEOUT and add SOURCE103, see #1
+- update STOPTIMEOUT and add SOURCE103, see #5
 
 * Fri Jul 29 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.32-1.ius
 - Latest upstream
