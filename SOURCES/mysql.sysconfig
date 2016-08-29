@@ -1,0 +1,3 @@
+# Edit these variables to override the default timeout values in /etc/init.d/mysqld.
+#STARTTIMEOUT=120
+#STOPTIMEOUT=600

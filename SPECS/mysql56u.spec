@@ -22,7 +22,7 @@
 
 Name:             mysql56u
 Version:          5.6.32
-Release:          1.ius%{?dist}
+Release:          2.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -53,6 +53,8 @@ Source17:         mysql-5.6.10-rpmlintrc
 Source100: my-56-terse.cnf
 Source101: my-56-verbose.cnf
 Source102: mysql.logrotate
+Source103: mysql.sysconfig
+
 
 # Comments for these patches are in the patch files
 Patch2:           mysql-strmov.patch
@@ -440,6 +442,7 @@ install -m 0644 %{SOURCE3} %{buildroot}/etc/my.cnf
 
 %if 0%{?fedora} < 15
 install -m 0755 -D %{SOURCE2} %{buildroot}/etc/rc.d/init.d/mysqld
+install -m 0644 -D %{SOURCE103} %{buildroot}/etc/sysconfig/mysqld
 %endif
 
 %if 0%{?fedora} > 14
@@ -818,6 +821,7 @@ fi
 
 %else
 /etc/rc.d/init.d/mysqld
+%config(noreplace) /etc/sysconfig/mysqld
 %endif
 
 %attr(0755,mysql,mysql) %dir /var/run/mysqld
@@ -858,6 +862,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Mon Aug 22 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.32-2.ius
+- update STOPTIMEOUT and add SOURCE103, see #5
+
 * Fri Jul 29 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.32-1.ius
 - Latest upstream
 
