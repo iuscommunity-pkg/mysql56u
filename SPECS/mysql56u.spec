@@ -21,8 +21,8 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.32
-Release:          2.ius%{?dist}
+Version:          5.6.33
+Release:          1.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
 URL:              http://www.mysql.com
@@ -524,7 +524,7 @@ find %{buildroot}/usr/share/mysql-test/{r,suite,t} -type f -print0 | xargs --nul
 chmod 0644 %{buildroot}/usr/share/mysql-test/include/{start_mysqld,shutdown_mysqld,check_ipv4_mapped}.inc
 for f in std_data/checkDBI_DBD-mysql.pl suite/engines/rr_trx/run_stress_tx_rr.pl \
          suite/funcs_1/lib/DataGen_local.pl suite/funcs_1/lib/DataGen_modify.pl \
-         suite/funcs_2/lib/gen_charset_utf8.pl  suite/opt_trace/validate_json.py \
+         suite/funcs_2/lib/gen_charset_utf8.pl  suite/opt_trace/validate_json.pl \
          suite/rpl/extension/bhs.pl suite/rpl/extension/checksum.pl ; do
     chmod 0755 %{buildroot}/usr/share/mysql-test/$f
 done
@@ -862,6 +862,10 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Tue Sep 06 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.33-1.ius
+- Latest upstream
+- update permissions for updated test now written in perl, validate_json.pl
+
 * Mon Aug 22 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.32-2.ius
 - update STOPTIMEOUT and add SOURCE103, see #5
 
