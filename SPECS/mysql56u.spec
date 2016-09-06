@@ -87,6 +87,8 @@ BuildRequires:    procps
 BuildRequires:    time
 BuildRequires:    perl(Socket)
 BuildRequires:    perl(Time::HiRes)
+BuildRequires:    perl(JSON)
+BuildRequires:    perl(File::Spec::Functions)
 %if 0%{?fedora} > 14
 BuildRequires:    systemd-units
 %endif
@@ -865,6 +867,7 @@ fi
 * Tue Sep 06 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.33-1.ius
 - Latest upstream
 - update permissions for updated test now written in perl, validate_json.pl
+- add BuildRequires for perl(File::Spec::Functions) and perl(JSON) for updated test
 
 * Mon Aug 22 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.32-2.ius
 - update STOPTIMEOUT and add SOURCE103, see #5
