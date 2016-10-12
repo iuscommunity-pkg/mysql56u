@@ -21,7 +21,7 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.33
+Version:          5.6.34
 Release:          1.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
@@ -401,7 +401,8 @@ LD_LIBRARY_PATH=. ldd ./a.out
 %install
 mkdir -p %{buildroot}/var/log/mysql \
          %{buildroot}/var/lib/mysqllogs \
-         %{buildroot}/var/lib/mysqltmp
+         %{buildroot}/var/lib/mysqltmp \
+         %{buildroot}/var/lib/mysql-files
 pushd build
 make DESTDIR=%{buildroot} install
 
@@ -828,6 +829,7 @@ fi
 
 %attr(0755,mysql,mysql) %dir /var/run/mysqld
 %attr(0755,mysql,mysql) %dir /var/lib/mysql
+%attr(0750,mysql,mysql) %dir /var/lib/mysql-files
 %attr(0755,mysql,mysql) %dir %{_localstatedir}/lib/mysqltmp/
 %attr(0640,mysql,mysql) %config(noreplace) %verify(not md5 size mtime) /var/log/mysqld.log
 %config(noreplace) %{_sysconfdir}/logrotate.d/mysqld
@@ -864,6 +866,11 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Wed Oct 12 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.32-1.ius
+- Latest upstream
+- added /var/lib/mysql-files, see:
+  https://dev.mysql.com/doc/relnotes/mysql/5.6/en/news-5-6-34.html
+
 * Tue Sep 06 2016 Ben Harper <ben.harper@rackspace.com> - 5.6.33-1.ius
 - Latest upstream
 - update permissions for updated test now written in perl, validate_json.pl
