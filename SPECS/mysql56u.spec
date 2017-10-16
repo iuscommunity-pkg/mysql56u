@@ -21,7 +21,7 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.37
+Version:          5.6.38
 Release:          1.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
@@ -866,6 +866,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Mon Oct 16 2017 Ben Harper <ben.harper@rackspace.com> - 5.6.38-1.ius
+- Latest upstream
+
 * Mon Jul 17 2017 Ben Harper <ben.harper@rackspace.com> - 5.6.37-1.ius
 - Latest upstream
 
