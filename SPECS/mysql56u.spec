@@ -88,7 +88,6 @@ BuildRequires:    perl(Time::HiRes)
 
 Requires:         bash coreutils grep
 Requires:         %{name}-common%{?_isa} = %{version}-%{release}
-Conflicts:        mariadb
 
 # IUS-isms
 Provides:         mysql = %{version}-%{release}
@@ -152,7 +151,6 @@ Requires(preun):  chkconfig
 # mysqlhotcopy needs DBI/DBD support
 Requires:         perl(DBI)
 Requires:         perl(DBD::mysql)
-Conflicts:        mariadb-server, MySQL-server
 # IUS-isms
 Provides:         mysql-server = %{version}-%{release}
 Provides:         mysql-server%{?_isa} = %{version}-%{release}
@@ -171,7 +169,6 @@ Summary:          Files for development of MySQL applications
 Group:            Applications/Databases
 Requires:         %{name}-libs%{?_isa} = %{version}-%{release}
 Requires:         pkgconfig(openssl)
-Conflicts:        mariadb-devel, MySQL-devel
 # IUS-isms
 Provides:         mysql-devel = %{version}-%{release}
 Provides:         mysql-devel%{?_isa} = %{version}-%{release}
@@ -205,7 +202,6 @@ Summary:          Development files for MySQL as an embeddable library
 Group:            Applications/Databases
 Requires:         %{name}-embedded%{?_isa} = %{version}-%{release}
 Requires:         %{name}-devel%{?_isa} = %{version}-%{release}
-Conflicts:        mariadb-embedded-devel, MySQL-embedded-devel
 # IUS-isms
 Provides:         mysql-embedded-devel = %{version}-%{release}
 Provides:         mysql-embedded-devel%{?_isa} = %{version}-%{release}
@@ -222,7 +218,6 @@ the embedded version of the MySQL server.
 Summary:          MySQL benchmark scripts and data
 Group:            Applications/Databases
 Requires:         %{name}%{?_isa} = %{version}-%{release}
-Conflicts:        mariadb-bench, MySQL-bench
 # IUS-isms
 Provides:         mysql-bench = %{version}-%{release}
 Provides:         mysql-bench%{?_isa} = %{version}-%{release}
@@ -253,7 +248,6 @@ Requires:         perl(Socket)
 Requires:         perl(Sys::Hostname)
 Requires:         perl(Test::More)
 Requires:         perl(Time::HiRes)
-Conflicts:        mariadb-test, MySQL-test
 # IUS-isms
 Provides:         mysql-test = %{version}-%{release}
 Provides:         mysql-test%{?_isa} = %{version}-%{release}
