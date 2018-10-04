@@ -1,20 +1,10 @@
-%global basever 5.6
-
 # Regression tests may take a long time (many cores recommended), skip them by
 # passing --nocheck to rpmbuild or by setting runselftest to 0 if defining
 # --nocheck is not possible (e.g. in koji build)
 %{!?runselftest:%global runselftest 1}
 
-# set to 1 to avoid file conflict
-%global with_shared_lib_major_hack 0
-
+# Use Full RELRO for all binaries (RHBZ#1092548)
 %global _hardened_build 1
-
-%{?filter_setup:
-%filter_from_requires /perl(th.*/d; /perl(lib::mtr.*/d; /perl(lib::v1\/mtr.*/d; /perl(mtr.*/d; /perl(hostnames)/d;
-%filter_provides_in %{_datadir}/%{name}/
-%filter_setup
-}
 
 # By default, patch(1) creates backup files when chunks apply with offsets.
 # Turn that off to ensure such files don't get included in RPMs (cf bz#884755).
@@ -41,7 +31,6 @@ Source5:          my_config.h
 Source6:          README.mysql-docs
 Source7:          README.mysql-license
 Source9:          mysql-embedded-check.c
-Source10:         mysql.tmpfiles.d
 Source11:         mysqld.service
 Source12:         mysqld-prepare-db-dir
 Source13:         mysqld-wait-ready
@@ -50,11 +39,10 @@ Source15:         rh-skipped-tests-arm.list
 # To track rpmlint warnings
 Source17:         mysql-5.6.10-rpmlintrc
 
-Source100: my-56-terse.cnf
-Source101: my-56-verbose.cnf
-Source102: mysql.logrotate
-Source103: mysql.sysconfig
-
+Source100:        my-56-terse.cnf
+Source101:        my-56-verbose.cnf
+Source102:        mysql.logrotate
+Source103:        mysql.sysconfig
 
 # Comments for these patches are in the patch files
 Patch2:           mysql-strmov.patch
@@ -67,7 +55,6 @@ Patch18:          mysql-5.6.11-cipherspec.patch
 #Patch21:          mysql-dh1024.patch
 Patch23:          mysql-5.6.10-libmysql-version.patch
 Patch25:          mysql-5.6.14-mysql-install.patch
-Patch26:          mysql-5.6.11-major.patch
 Patch29:          community-mysql-tmpdir.patch
 Patch31:          community-mysql-innodbwarn.patch
 Patch34:          community-mysql-pluginerrmsg.patch
@@ -98,22 +85,21 @@ BuildRequires:    perl(Socket)
 BuildRequires:    perl(Sys::Hostname)
 BuildRequires:    perl(Test::More)
 BuildRequires:    perl(Time::HiRes)
-%if 0%{?fedora} > 14
-BuildRequires:    systemd-units
-%endif
 
 Requires:         bash coreutils grep
 Requires:         %{name}-common%{?_isa} = %{version}-%{release}
-Provides:         mysql = %{version}-%{release} 
-Provides:         mysql%{?_isa} = %{version}-%{release}
 Conflicts:        mariadb
-# mysql-cluster used to be built from this SRPM, but no more
-Obsoletes:        mysql-cluster < 5.1.44
 
 # IUS-isms
-Requires: mysqlclient16
-Conflicts: mysql < %{basever}
-Provides: mysql = %{version}-%{release}
+Provides:         mysql = %{version}-%{release}
+Provides:         mysql%{?_isa} = %{version}-%{release}
+Conflicts:        mysql < %{version}
+Requires:         mysqlclient16
+
+%filter_from_requires /perl(\(hostnames\|lib::mtr\|lib::v1\|mtr_\|My::\)/d
+%filter_provides_in -P (%{_datadir}/(mysql|mysql-test)/.*|%{_libdir}/mysql/plugin/.*\.so)
+%filter_setup
+
 
 %description
 MySQL is a multi-user, multi-threaded SQL database server. MySQL is a
@@ -126,61 +112,52 @@ contains the standard MySQL client programs and generic MySQL files.
 Summary:          The shared libraries required for MySQL clients
 Group:            Applications/Databases
 Requires:         %{name}-common%{?_isa} = %{version}-%{release}
-
 # IUS-isms
-Conflicts: mysql-libs < %{basever}
-Provides: mysql-libs = %{version}-%{release}
-Provides: config(mysql-libs) = %{version}-%{release}
+Provides:         mysql-libs = %{version}-%{release}
+Provides:         mysql-libs%{?_isa} = %{version}-%{release}
+Conflicts:        mysql-libs < %{version}
+
 
 %description      libs
-The mysql-libs package provides the essential shared libraries for any 
+The mysql-libs package provides the essential shared libraries for any
 MySQL client program or interface. You will need to install this package
 to use any other MySQL package or any clients that need to connect to a
 MySQL server.
 
+
 %package          common
 Summary:          The shared files required for MySQL server and client
 Group:            Applications/Databases
+# IUS-isms
+Provides:         mysql-common = %{version}-%{release}
+Provides:         mysql-common%{?_isa} = %{version}-%{release}
+Conflicts:        mysql-common < %{version}
+
+
 %description      common
 The mysql-common package provides the essential shared files for any
 MySQL program. You will need to install this package to use any other
 MySQL package.
 
+
 %package          server
 Summary:          The MySQL server and related files
 Group:            Applications/Databases
-
-# note: no version here = %{version}-%{release}
-#Requires:         mysql%{?_isa} 
-Requires:         %{name}%{?_isa} 
+Requires:         %{name}%{?_isa} = %{version}-%{release}
 Requires:         %{name}-libs%{?_isa} = %{version}-%{release}
 Requires:         coreutils
 Requires(pre):    /usr/sbin/useradd
 Requires(post):   chkconfig
 Requires(preun):  chkconfig
-%if 0%{?fedora} > 14
-# We require this to be present for %%{_prefix}/lib/tmpfiles.d
-Requires:         systemd-units
-# Make sure it's there when scriptlets run, too
-Requires(post):   systemd
-Requires(preun):  systemd
-Requires(postun): systemd
-# This is actually needed for the %%triggerun script but Requires(triggerun)
-# is not valid.  We can use %%post because this particular %%triggerun script
-# should fire just after this package is installed.
-Requires(post):   systemd-sysv
-%endif
 # mysqlhotcopy needs DBI/DBD support
 Requires:         perl(DBI)
 Requires:         perl(DBD::mysql)
-#Provides:         mysql-server = %{version}-%{release} 
-Provides:         mysql-server%{?_isa} = %{version}-%{release}
 Conflicts:        mariadb-server, MySQL-server
-
 # IUS-isms
-Conflicts: mysql-server < %{basever}
-Provides: mysql-server = %{version}-%{release}
-Provides: config(mysql-server) = %{version}-%{release}
+Provides:         mysql-server = %{version}-%{release}
+Provides:         mysql-server%{?_isa} = %{version}-%{release}
+Conflicts:        mysql-server < %{version}
+
 
 %description      server
 MySQL is a multi-user, multi-threaded SQL database server. MySQL is a
@@ -195,12 +172,11 @@ Group:            Applications/Databases
 Requires:         %{name}-libs%{?_isa} = %{version}-%{release}
 Requires:         pkgconfig(openssl)
 Conflicts:        mariadb-devel, MySQL-devel
-
-#Provides:         mysql-devel = %{version}-%{release}
-Provides:         mysql-devel%{?_isa} = %{version}-%{release}
 # IUS-isms
-Conflicts: mysql-devel < %{basever}
-Provides: mysql-devel = %{version}-%{release}
+Provides:         mysql-devel = %{version}-%{release}
+Provides:         mysql-devel%{?_isa} = %{version}-%{release}
+Conflicts:        mysql-devel < %{version}
+
 
 %description      devel
 MySQL is a multi-user, multi-threaded SQL database server. This
@@ -211,12 +187,12 @@ developing MySQL client applications.
 %package          embedded
 Summary:          MySQL as an embeddable library
 Group:            Applications/Databases
-#Provides:         mysql-embedded = %{version}-%{release}
-Provides:         mysql-embedded%{?_isa} = %{version}-%{release}
-
+Requires:         %{name}-common%{?_isa} = %{version}-%{release}
 # IUS-isms
-Conflicts: mysql-embedded < %{basever}
-Provides: mysql-embedded = %{version}-%{release}
+Provides:         mysql-embedded = %{version}-%{release}
+Provides:         mysql-embedded%{?_isa} = %{version}-%{release}
+Conflicts:        mysql-embedded < %{version}
+
 
 %description      embedded
 MySQL is a multi-user, multi-threaded SQL database server. This
@@ -230,12 +206,11 @@ Group:            Applications/Databases
 Requires:         %{name}-embedded%{?_isa} = %{version}-%{release}
 Requires:         %{name}-devel%{?_isa} = %{version}-%{release}
 Conflicts:        mariadb-embedded-devel, MySQL-embedded-devel
-#Provides:         mysql-embedded-devel = %{version}-%{release}
-Provides:         mysql-embedded-devel%{?_isa} = %{version}-%{release}
-
 # IUS-isms
-Conflicts: mysql-embedded-devel < %{basever}
-Provides: mysql-embedded-devel = %{version}-%{release}
+Provides:         mysql-embedded-devel = %{version}-%{release}
+Provides:         mysql-embedded-devel%{?_isa} = %{version}-%{release}
+Conflicts:        mysql-embedded-devel < %{version}
+
 
 %description      embedded-devel
 MySQL is a multi-user, multi-threaded SQL database server. This
@@ -248,12 +223,11 @@ Summary:          MySQL benchmark scripts and data
 Group:            Applications/Databases
 Requires:         %{name}%{?_isa} = %{version}-%{release}
 Conflicts:        mariadb-bench, MySQL-bench
-#Provides:         mysql-bench = %{version}-%{release}
-Provides:         mysql-bench%{?_isa} = %{version}-%{release}
-
 # IUS-isms
-Conflicts: mysql-bench < %{basever}
-Provides: mysql-bench = %{version}-%{release}
+Provides:         mysql-bench = %{version}-%{release}
+Provides:         mysql-bench%{?_isa} = %{version}-%{release}
+Conflicts:        mysql-bench < %{version}
+
 
 %description      bench
 MySQL is a multi-user, multi-threaded SQL database server. This
@@ -280,13 +254,13 @@ Requires:         perl(Sys::Hostname)
 Requires:         perl(Test::More)
 Requires:         perl(Time::HiRes)
 Conflicts:        mariadb-test, MySQL-test
-#Provides:         mysql-test = %{version}-%{release}
-Provides:         mysql-test%{?_isa} = %{version}-%{release}
 # IUS-isms
-Conflicts: mysql-test < %{basever}
-Provides: mysql-test = %{version}-%{release}
+Provides:         mysql-test = %{version}-%{release}
+Provides:         mysql-test%{?_isa} = %{version}-%{release}
+Conflicts:        mysql-test < %{version}
 
-%description test
+
+%description      test
 MySQL is a multi-user, multi-threaded SQL database server. This
 package contains the regression test suite distributed with
 the MySQL sources.
@@ -306,9 +280,6 @@ cp %{SOURCE101} .
 %patch18 -p1
 %patch23 -p1
 %patch25 -p1
-%if %{with_shared_lib_major_hack}
-%patch26 -p1
-%endif
 %patch29 -p1
 %patch31 -p1
 %patch34 -p1
@@ -330,6 +301,7 @@ cat %{SOURCE15} >> mysql-test/rh-skipped-tests.list
 %endif
 # Upstream bug: http://bugs.mysql.com/68520
 dos2unix -k README
+
 
 %build
 # fail quickly and obviously if user tries to build as root
@@ -460,21 +432,8 @@ install -m 0755 -d %{buildroot}/var/lib/mysql
 mkdir -p %{buildroot}/etc
 install -m 0644 %{SOURCE3} %{buildroot}/etc/my.cnf
 
-%if 0%{?fedora} < 15
-install -m 0755 -D %{SOURCE2} %{buildroot}/etc/rc.d/init.d/mysqld
+install -m 0755 -D %{SOURCE2} %{buildroot}%{_initddir}/mysqld
 install -m 0644 -D %{SOURCE103} %{buildroot}/etc/sysconfig/mysqld
-%endif
-
-%if 0%{?fedora} > 14
-# install systemd unit files and scripts for handling server startup
-mkdir -p %{buildroot}%{_unitdir}
-install -m 644 %{SOURCE11} %{buildroot}%{_unitdir}/
-install -m 755 %{SOURCE12} %{buildroot}%{_libexecdir}/
-install -m 755 %{SOURCE13} %{buildroot}%{_libexecdir}/
-
-mkdir -p %{buildroot}%{_prefix}/lib/tmpfiles.d
-install -m 0644 %{SOURCE10} %{buildroot}%{_prefix}/lib/tmpfiles.d/mysql.conf
-%endif
 
 # Fix scripts for multilib safety
 mv %{buildroot}%{_bindir}/mysqlbug %{buildroot}%{_libdir}/mysql/mysqlbug
@@ -489,7 +448,7 @@ ln -s libmysqld.so.0.0.1 %{buildroot}%{_libdir}/mysql/libmysqld.so.0
 ln -s libmysqld.so.0 %{buildroot}%{_libdir}/mysql/libmysqld.so
 
 # install my-55-terse.cnf
-install -m 0644 %{SOURCE100} ${RPM_BUILD_ROOT}%{_sysconfdir}/my.cnf
+install -m 0644 %{SOURCE100} %{buildroot}%{_sysconfdir}/my.cnf
 
 # logrotate
 mkdir -p %{buildroot}/etc/logrotate.d/
@@ -525,8 +484,8 @@ mkdir -p %{buildroot}%{_sysconfdir}/logrotate.d
 mv %{buildroot}%{_datadir}/mysql/mysql-log-rotate %{buildroot}%{_sysconfdir}/logrotate.d/mysqld
 chmod 644 %{buildroot}%{_sysconfdir}/logrotate.d/mysqld
 
-mkdir -p %{buildroot}/etc/ld.so.conf.d
-echo "%{_libdir}/mysql" > %{buildroot}/etc/ld.so.conf.d/%{name}-%{_arch}.conf
+mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
+echo "%{_libdir}/mysql" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}-%{_arch}.conf
 
 # Back to src dir
 popd
@@ -564,6 +523,7 @@ cp -p %{buildroot}/usr/share/man/man1/mysql_client_test.1 %{buildroot}/usr/share
 
 mkdir %{buildroot}%{_sysconfdir}/my.cnf.d
 
+
 %check
 %if %runselftest
 pushd build
@@ -586,7 +546,7 @@ make test VERBOSE=1
 # manually.  Nonstandard options chosen are:
 # --force to continue tests after a failure
 # no retries please
-# test SSL with 
+# test SSL with
 # skip tests that are listed in rh-skipped-tests.list
 # avoid redundant test runs with --binlog-format=mixed
 # increase timeouts to prevent unwanted failures during mass rebuilds
@@ -608,78 +568,31 @@ popd
 /usr/sbin/useradd -M -N -g mysql -o -r -d /var/lib/mysql -s /bin/bash \
   -c "MySQL Server" -u 27 mysql >/dev/null 2>&1 || :
 
+
 %post libs -p /sbin/ldconfig
 
+
 %post server
-%if 0%{?fedora} < 15
 if [ $1 = 1 ]; then
     /sbin/chkconfig --add mysqld
 fi
-%else
-%if 0%{?systemd_post:1}
-%systemd_post mysqld.service
-%else
-if [ $1 = 1 ]; then
-    # Initial installation
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-fi
-%endif
-%endif
 /bin/touch /var/log/mysqld.log
 
-# Handle upgrading from SysV initscript to native systemd unit.
-# We can tell if a SysV version of mysql was previously installed by
-# checking to see if the initscript is present.
-%triggerun server -- mysql-server
-%if 0%{?fedora} > 14
-if [ -f /etc/rc.d/init.d/mysqld ]; then
-  # Save the current service runlevel info
-  # User must manually run systemd-sysv-convert --apply mysqld
-  # to migrate them to systemd targets
-  /usr/bin/systemd-sysv-convert --save mysqld >/dev/null 2>&1 || :
-
-  # Run these because the SysV package being removed won't do them
-  /sbin/chkconfig --del mysqld >/dev/null 2>&1 || :
-  /bin/systemctl try-restart mysqld.service >/dev/null 2>&1 || :
-fi
-%endif
 
 %preun server
-%if 0%{?fedora} < 15
 if [ $1 = 0 ]; then
     /sbin/service mysqld stop >/dev/null 2>&1
     /sbin/chkconfig --del mysqld
 fi
-%else
-%if 0%{?systemd_preun:1}
-%systemd_preun mysqld.service
-%else
-if [ $1 = 0 ]; then
-  # Package removal, not upgrade
-  /bin/systemctl --no-reload disable mysqld.service >/dev/null 2>&1 || :
-  /bin/systemctl stop mysqld.service >/dev/null 2>&1 || :
-fi
-%endif
-%endif
+
 
 %postun libs -p /sbin/ldconfig
 
+
 %postun server
-%if 0%{?fedora} < 15
 if [ $1 -ge 1 ]; then
     /sbin/service mysqld condrestart >/dev/null 2>&1 || :
 fi
-%else
-%if 0%{?systemd_postun_with_restart:1}
-%systemd_postun_with_restart mysqld.service
-%else
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ]; then
-  # Package upgrade, not uninstall
-  /bin/systemctl try-restart mysqld.service >/dev/null 2>&1 || :
-fi
-%endif
-%endif
 
 
 %files
@@ -720,6 +633,7 @@ fi
 
 %{_libdir}/mysql/mysql_config
 
+
 %files libs
 %doc README COPYING README.mysql-license
 # although the default my.cnf contains only server settings, we put it in the
@@ -728,6 +642,7 @@ fi
 %dir %{_libdir}/mysql
 %{_libdir}/mysql/libmysqlclient.so.*
 %config(noreplace) /etc/ld.so.conf.d/*
+
 
 %files common
 %dir %{_sysconfdir}/my.cnf.d
@@ -758,9 +673,10 @@ fi
 %lang(uk) %{_datadir}/mysql/ukrainian
 %{_datadir}/mysql/charsets
 
+
 %files server
 %doc README COPYING README.mysql-license
-%{_bindir}/myisamchk    
+%{_bindir}/myisamchk
 %{_bindir}/myisam_ftdump
 %{_bindir}/myisamlog
 %{_bindir}/myisampack
@@ -832,17 +748,7 @@ fi
 %{_datadir}/mysql/mysql_test_data_timezone.sql
 %{_datadir}/mysql/my-*.cnf
 
-%if 0%{?fedora} > 14
-%{_unitdir}/mysqld.service
-%{_libexecdir}/mysqld-prepare-db-dir
-%{_libexecdir}/mysqld-wait-ready
-
-%{_prefix}/lib/tmpfiles.d/mysql.conf
-
-%else
-/etc/rc.d/init.d/mysqld
-%config(noreplace) /etc/sysconfig/mysqld
-%endif
+%{_initddir}/mysqld
 
 %attr(0755,mysql,mysql) %dir /var/run/mysqld
 %attr(0755,mysql,mysql) %dir /var/lib/mysql
@@ -851,6 +757,8 @@ fi
 %attr(0640,mysql,mysql) %config(noreplace) %verify(not md5 size mtime) /var/log/mysqld.log
 %config(noreplace) %{_sysconfdir}/logrotate.d/mysqld
 %attr(0755,mysql,mysql) %dir /var/log/mysql/
+%config(noreplace) %{_sysconfdir}/sysconfig/mysqld
+
 
 %files devel
 %doc README COPYING README.mysql-license
@@ -859,9 +767,11 @@ fi
 %{_libdir}/mysql/libmysqlclient.so
 %{_libdir}/mysql/libmysqlclient_r.so
 
+
 %files embedded
 %doc README COPYING README.mysql-license
 %{_libdir}/mysql/libmysqld.so.*
+
 
 %files embedded-devel
 %doc README COPYING README.mysql-license
@@ -871,9 +781,11 @@ fi
 %{_mandir}/man1/mysql_client_test_embedded.1*
 %{_mandir}/man1/mysqltest_embedded.1*
 
+
 %files bench
 %doc README COPYING README.mysql-license
 %{_datadir}/sql-bench
+
 
 %files test
 %doc README COPYING README.mysql-license
@@ -881,6 +793,7 @@ fi
 %{_bindir}/my_safe_process
 %attr(-,mysql,mysql) %{_datadir}/mysql-test
 %{_mandir}/man1/mysql_client_test.1*
+
 
 %changelog
 * Thu Oct 04 2018 Carl George <carl@george.computer> - 5.6.41-1.ius
@@ -1021,7 +934,7 @@ fi
 
 * Tue Apr 23 2013 Bjorn Munch <bjorn.munch@oracle.com> 5.6.11-0.1
 - 5.6.11
-- Release notes: 
+- Release notes:
    https://dev.mysql.com/doc/relnotes/mysql/5.6/en/news-5-6-11.html
 - zlib patch now upstream
 - remove probes.o from linking of shared lib
@@ -1825,7 +1738,7 @@ Resolves: #199368
   pinging mysql server (#108779)
 
 * Mon Oct 27 2003 Kim Ho <kho@redhat.com> 3.23.58-4
-- update mysql.init to wait (max 10 seconds) for mysql server to 
+- update mysql.init to wait (max 10 seconds) for mysql server to
   start (#58732)
 
 * Mon Oct 27 2003 Patrick Macdonald <patrickm@redhat.com> 3.23.58-3
@@ -1842,7 +1755,7 @@ Resolves: #199368
 - rebuilt
 
 * Wed Jul 02 2003 Patrick Macdonald <patrickm@redhat.com> 3.23.57-1
-- revert to prior version of MySQL due to license incompatibilities 
+- revert to prior version of MySQL due to license incompatibilities
   with packages that link against the client.  The MySQL folks are
   looking into the issue.
 
@@ -1853,18 +1766,18 @@ Resolves: #199368
 - rebuilt
 
 * Thu May 29 2003 Patrick Macdonald <patrickm@redhat.com> 4.0.13-2
-- fix filter-requires-mysql.sh with less restrictive for mysql-bench 
+- fix filter-requires-mysql.sh with less restrictive for mysql-bench
 
 * Wed May 28 2003 Patrick Macdonald <patrickm@redhat.com> 4.0.13-1
 - update for MySQL 4.0
 - back-level shared libraries available in mysqlclient10 package
 
 * Fri May 09 2003 Patrick Macdonald <patrickm@redhat.com> 3.23.56-2
-- add sql-bench package (#90110) 
+- add sql-bench package (#90110)
 
 * Wed Mar 19 2003 Patrick Macdonald <patrickm@redhat.com> 3.23.56-1
 - upgrade to 3.23.56 for security fixes
-- remove patch for double-free (included in 3.23.56) 
+- remove patch for double-free (included in 3.23.56)
 
 * Tue Feb 18 2003 Patrick Macdonald <patrickm@redhat.com> 3.23.54a-11
 - enable thread safe client
@@ -1922,11 +1835,11 @@ Resolves: #199368
 - rebuild
 
 * Thu Jul 18 2002 Trond Eivind Glomsrd <teg@redhat.com> 3.23.51-3
-- Fix #63543 and #63542 
+- Fix #63543 and #63542
 
 * Thu Jul 11 2002 Trond Eivind Glomsrd <teg@redhat.com> 3.23.51-2
 - Turn off bdb on PPC(#68591)
-- Turn off the assembly optimizations, for safety. 
+- Turn off the assembly optimizations, for safety.
 
 * Wed Jun 26 2002 Trond Eivind Glomsrd <teg@redhat.com> 3.23.51-1
 - Work around annoying auto* thinking this is a crosscompile
@@ -1968,12 +1881,12 @@ Resolves: #199368
 - 3.23.48
 
 * Thu Jan 17 2002 Trond Eivind Glomsrd <teg@redhat.com> 3.23.47-4
-- Use kill, not mysqladmin, to flush logs and shut down. Thus, 
+- Use kill, not mysqladmin, to flush logs and shut down. Thus,
   an admin password can be set with no problems.
 - Remove reload from init script
 
 * Wed Jan 16 2002 Trond Eivind Glomsrd <teg@redhat.com> 3.23.47-3
-- remove db3-devel from buildrequires, 
+- remove db3-devel from buildrequires,
   MySQL has had its own bundled copy since the mid thirties
 
 * Sun Jan  6 2002 Trond Eivind Glomsrd <teg@redhat.com> 3.23.47-1
@@ -1982,7 +1895,7 @@ Resolves: #199368
 
 * Mon Dec  3 2001 Trond Eivind Glomsrd <teg@redhat.com> 3.23.46-1
 - 3.23.46
-- use -fno-rtti and -fno-exceptions, and set CXX to increase stability. 
+- use -fno-rtti and -fno-exceptions, and set CXX to increase stability.
   Recommended by mysql developers.
 
 * Sun Nov 25 2001 Trond Eivind Glomsrd <teg@redhat.com> 3.23.45-1
@@ -2004,7 +1917,7 @@ Resolves: #199368
 * Tue Aug 14 2001 Trond Eivind Glomsrd <teg@redhat.com> 3.23.41-1
 - 3.23.41 bugfix release
 - disable innodb, to avoid the broken updates
-- Use "mysqladmin flush_logs" instead of kill -HUP in logrotate 
+- Use "mysqladmin flush_logs" instead of kill -HUP in logrotate
   script (#51711)
 
 * Sat Jul 21 2001 Trond Eivind Glomsrd <teg@redhat.com>
@@ -2053,7 +1966,7 @@ Resolves: #199368
 - small i18n-fixes to initscript (action needs $)
 
 * Tue Jan 30 2001 Trond Eivind Glomsrd <teg@redhat.com>
-- make it shut down and rotate logs without using mysqladmin 
+- make it shut down and rotate logs without using mysqladmin
   (from #24909)
 
 * Mon Jan 29 2001 Trond Eivind Glomsrd <teg@redhat.com>
@@ -2078,14 +1991,14 @@ Resolves: #199368
 - as above in logrotate script
 - changes to the init sequence - put most of the data
   in /etc/my.cnf instead of hardcoding in the init script
-- use /var/run/mysqld/mysqld.pid instead of 
+- use /var/run/mysqld/mysqld.pid instead of
   /var/run/mysqld/pid
 - use standard safe_mysqld
 - shut down cleaner
 
 * Mon Jan 08 2001 Trond Eivind Glomsrd <teg@redhat.com>
 - 3.23.30
-- do an explicit chmod on /var/lib/mysql in post, to avoid 
+- do an explicit chmod on /var/lib/mysql in post, to avoid
   any problems with broken permissons. There is a report
   of rm not changing this on its own (#22989)
 
@@ -2134,7 +2047,7 @@ Resolves: #199368
   instead of tempnam().
 - revert changes made yesterday, the problem is now
   isolated
- 
+
 * Tue Oct 17 2000 Trond Eivind Glomsrd <teg@redhat.com>
 - use the compat C++ compiler FTTB. Argh.
 - add requirement of ncurses4 (see above)
@@ -2151,8 +2064,8 @@ Resolves: #199368
 - rename config file to /etc/my.cnf, which is what
   mysqld wants... doh. (#17432)
 - include a changed safe_mysqld, so the pid file option
-  works. 
-- make mysql dir world readable to they can access the 
+  works.
+- make mysql dir world readable to they can access the
   mysql socket. (#17432)
 - 3.23.24
 
@@ -2163,7 +2076,7 @@ Resolves: #199368
 - Add "|| :" to condrestart to avoid non-zero exit code
 
 * Thu Aug 24 2000 Trond Eivind Glomsrd <teg@redhat.com>
-- it's mysql.com, not mysql.org and use correct path to 
+- it's mysql.com, not mysql.org and use correct path to
   source (#16830)
 
 * Wed Aug 16 2000 Trond Eivind Glomsrd <teg@redhat.com>
@@ -2200,14 +2113,14 @@ Resolves: #199368
 - more cleanups in initscript
 
 * Thu Jul 13 2000 Trond Eivind Glomsrd <teg@redhat.com>
-- add a patch to work around compiler bug 
-  (from monty@mysql.com) 
+- add a patch to work around compiler bug
+  (from monty@mysql.com)
 
 * Wed Jul 12 2000 Trond Eivind Glomsrd <teg@redhat.com>
 - don't build the SQL daemon statically (glibc problems)
 - fix the logrotate script - only flush log if mysql
   is running
-- change the reloading procedure 
+- change the reloading procedure
 - remove icon - glint is obsolete a long time ago
 
 * Wed Jul 12 2000 Prospector <bugzilla@redhat.com>
