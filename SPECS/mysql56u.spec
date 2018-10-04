@@ -21,7 +21,7 @@
 %global _default_patch_flags --no-backup-if-mismatch
 
 Name:             mysql56u
-Version:          5.6.39
+Version:          5.6.41
 Release:          1.ius%{?dist}
 Summary:          MySQL client programs and shared libraries
 Group:            Applications/Databases
@@ -31,7 +31,7 @@ URL:              http://www.mysql.com
 # not only GPL code.  See README.mysql-license
 License:          GPLv2 with exceptions
 
-Source0: http://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-%{version}.tar.gz
+Source0:          https://cdn.mysql.com/Downloads/MySQL-5.6/mysql-%{version}.tar.gz
 
 Source2:          mysql.init
 
@@ -85,17 +85,24 @@ BuildRequires:    zlib-devel
 # Tests requires time and ps and some perl modules
 BuildRequires:    procps
 BuildRequires:    time
-BuildRequires:    perl(Socket)
-BuildRequires:    perl(Time::HiRes)
+BuildRequires:    perl(Env)
+BuildRequires:    perl(Exporter)
+BuildRequires:    perl(Fcntl)
+BuildRequires:    perl(File::Temp)
+BuildRequires:    perl(Data::Dumper)
+BuildRequires:    perl(Getopt::Long)
+BuildRequires:    perl(IPC::Open3)
 BuildRequires:    perl(JSON)
-BuildRequires:    perl(File::Spec::Functions)
+BuildRequires:    perl(Memoize)
+BuildRequires:    perl(Socket)
+BuildRequires:    perl(Sys::Hostname)
+BuildRequires:    perl(Test::More)
+BuildRequires:    perl(Time::HiRes)
 %if 0%{?fedora} > 14
 BuildRequires:    systemd-units
 %endif
 
-Requires:         bash
-Requires:         grep
-Requires:         fileutils
+Requires:         bash coreutils grep
 Requires:         %{name}-common%{?_isa} = %{version}-%{release}
 Provides:         mysql = %{version}-%{release} 
 Provides:         mysql%{?_isa} = %{version}-%{release}
@@ -118,7 +125,6 @@ contains the standard MySQL client programs and generic MySQL files.
 %package          libs
 Summary:          The shared libraries required for MySQL clients
 Group:            Applications/Databases
-Requires:         /sbin/ldconfig
 Requires:         %{name}-common%{?_isa} = %{version}-%{release}
 
 # IUS-isms
@@ -148,7 +154,7 @@ Group:            Applications/Databases
 #Requires:         mysql%{?_isa} 
 Requires:         %{name}%{?_isa} 
 Requires:         %{name}-libs%{?_isa} = %{version}-%{release}
-Requires:         sh-utils
+Requires:         coreutils
 Requires(pre):    /usr/sbin/useradd
 Requires(post):   chkconfig
 Requires(preun):  chkconfig
@@ -186,9 +192,8 @@ the MySQL server and some accompanying files and directories.
 %package          devel
 Summary:          Files for development of MySQL applications
 Group:            Applications/Databases
-Requires:         %{name}%{?_isa} = %{version}-%{release}
 Requires:         %{name}-libs%{?_isa} = %{version}-%{release}
-Requires:         openssl-devel%{?_isa}
+Requires:         pkgconfig(openssl)
 Conflicts:        mariadb-devel, MySQL-devel
 
 #Provides:         mysql-devel = %{version}-%{release}
@@ -260,8 +265,20 @@ MySQL.
 Summary:          The test suite distributed with MySQL
 Group:            Applications/Databases
 Requires:         %{name}%{?_isa} = %{version}-%{release}
-Requires:         %{name}-libs%{?_isa} = %{version}-%{release}
+Requires:         %{name}-common%{?_isa} = %{version}-%{release}
 Requires:         %{name}-server%{?_isa} = %{version}-%{release}
+Requires:         perl(Env)
+Requires:         perl(Exporter)
+Requires:         perl(Fcntl)
+Requires:         perl(File::Temp)
+Requires:         perl(Data::Dumper)
+Requires:         perl(Getopt::Long)
+Requires:         perl(IPC::Open3)
+Requires:         perl(JSON)
+Requires:         perl(Socket)
+Requires:         perl(Sys::Hostname)
+Requires:         perl(Test::More)
+Requires:         perl(Time::HiRes)
 Conflicts:        mariadb-test, MySQL-test
 #Provides:         mysql-test = %{version}-%{release}
 Provides:         mysql-test%{?_isa} = %{version}-%{release}
@@ -866,6 +883,9 @@ fi
 %{_mandir}/man1/mysql_client_test.1*
 
 %changelog
+* Thu Oct 04 2018 Carl George <carl@george.computer> - 5.6.41-1.ius
+- Latest upstream
+
 * Mon Jan 15 2018 Ben Harper <ben.harper@rackspace.com> - 5.6.39-1.ius
 - Latest upstream
 
