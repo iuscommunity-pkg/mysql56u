@@ -778,7 +778,6 @@ fi
 %{_bindir}/mysql_client_test
 %{_bindir}/my_safe_process
 %attr(-,mysql,mysql) %{_datadir}/mysql-test
-%{_mandir}/man1/mysql_client_test.1*
 
 
 %changelog
