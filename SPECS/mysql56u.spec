@@ -510,11 +510,6 @@ for f in bench-count-distinct bench-init.pl compare-results copy-db crash-me \
 done
 dos2unix -k %{buildroot}/usr/share/sql-bench/innotest*
 
-# These are in fact identical
-rm %{buildroot}/usr/share/man/man1/{mysqltest,mysql_client_test}_embedded.1
-cp -p %{buildroot}/usr/share/man/man1/mysqltest.1 %{buildroot}/usr/share/man/man1/mysqltest_embedded.1
-cp -p %{buildroot}/usr/share/man/man1/mysql_client_test.1 %{buildroot}/usr/share/man/man1/mysql_client_test_embedded.1
-
 mkdir %{buildroot}%{_sysconfdir}/my.cnf.d
 
 
@@ -723,7 +718,6 @@ fi
 %{_mandir}/man1/mysqlhotcopy.1*
 %{_mandir}/man1/mysqlman.1*
 %{_mandir}/man1/mysql_setpermission.1*
-%{_mandir}/man1/mysqltest.1*
 %{_mandir}/man1/innochecksum.1*
 %{_mandir}/man1/perror.1*
 %{_mandir}/man1/replace.1*
@@ -772,8 +766,6 @@ fi
 %{_libdir}/mysql/libmysqld.so
 %{_bindir}/mysql_client_test_embedded
 %{_bindir}/mysqltest_embedded
-%{_mandir}/man1/mysql_client_test_embedded.1*
-%{_mandir}/man1/mysqltest_embedded.1*
 
 
 %files bench
